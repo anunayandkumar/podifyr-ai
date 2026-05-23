@@ -59,9 +59,22 @@ def estimate_file_importance(file_path: Path, line_count: int) -> float:
 
     # Boost for files with architecturally significant names
     significant_names = {
-        "app", "main", "core", "base", "engine", "manager",
-        "service", "handler", "router", "middleware", "models",
-        "schema", "config", "settings", "factory", "registry",
+        "app",
+        "main",
+        "core",
+        "base",
+        "engine",
+        "manager",
+        "service",
+        "handler",
+        "router",
+        "middleware",
+        "models",
+        "schema",
+        "config",
+        "settings",
+        "factory",
+        "registry",
     }
     if file_name in significant_names:
         score += 0.2

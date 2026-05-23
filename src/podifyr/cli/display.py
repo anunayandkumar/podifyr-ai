@@ -21,14 +21,16 @@ from podifyr.graph.models import GraphMetrics
 
 
 # Custom theme for consistent branding
-PODIFYR_THEME = Theme({
-    "info": "cyan",
-    "success": "green",
-    "warning": "yellow",
-    "error": "red bold",
-    "highlight": "magenta",
-    "module": "blue bold",
-})
+PODIFYR_THEME = Theme(
+    {
+        "info": "cyan",
+        "success": "green",
+        "warning": "yellow",
+        "error": "red bold",
+        "highlight": "magenta",
+        "module": "blue bold",
+    }
+)
 
 console = Console(theme=PODIFYR_THEME)
 

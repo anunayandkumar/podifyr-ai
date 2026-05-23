@@ -58,12 +58,12 @@ def analyzer_node(state: ScriptState) -> dict[str, str]:
         summary = response.content if isinstance(response.content, str) else str(response.content)
 
         if not summary.strip():
-            raise ValueError("LLM returned empty response")  # noqa: TRY301
+            raise ValueError("LLM returned empty response")
 
         logger.info("analyzer_complete", module=module_name, summary_length=len(summary))
         return {"technical_summary": summary}
 
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.warning("analyzer_failed", module=module_name, error=str(exc))
 
         # Construct a basic fallback summary from metadata

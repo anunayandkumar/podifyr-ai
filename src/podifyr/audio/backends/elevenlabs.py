@@ -55,7 +55,9 @@ class ElevenLabsTTSBackend(BaseTTSBackend):
             )
         return self._session
 
-    async def synthesize(self, text: str, output_path: Path, *, voice: str = _DEFAULT_VOICE_ID) -> bool:
+    async def synthesize(
+        self, text: str, output_path: Path, *, voice: str = _DEFAULT_VOICE_ID
+    ) -> bool:
         """Synthesize text to MP3 using the ElevenLabs API.
 
         Args:
@@ -72,7 +74,7 @@ class ElevenLabsTTSBackend(BaseTTSBackend):
 
         try:
             return await self._synthesize_with_retry(text, output_path, voice)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.error(
                 "elevenlabs_synthesis_failed",
                 output=str(output_path),

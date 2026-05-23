@@ -6,7 +6,6 @@ import ast
 from pathlib import Path
 
 from podifyr.cache import CacheManager
-from podifyr.config import get_settings
 from podifyr.logging import get_logger
 from podifyr.parsing.models import ModuleMetadata
 from podifyr.parsing.visitors import ModuleVisitor
@@ -87,7 +86,7 @@ def parse_file_cached(
     if cached is not None:
         try:
             return ModuleMetadata.model_validate(cached)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.debug("cache_deserialize_failed", file=str(file_path), error=str(exc))
 
     # Parse fresh

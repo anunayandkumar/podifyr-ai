@@ -62,7 +62,9 @@ class AzureTTSBackend(BaseTTSBackend):
             )
         return self._session
 
-    async def synthesize(self, text: str, output_path: Path, *, voice: str = DEFAULT_TTS_VOICE) -> bool:
+    async def synthesize(
+        self, text: str, output_path: Path, *, voice: str = DEFAULT_TTS_VOICE
+    ) -> bool:
         """Synthesize text to MP3 using the Azure OpenAI TTS API.
 
         Args:
@@ -79,7 +81,7 @@ class AzureTTSBackend(BaseTTSBackend):
 
         try:
             return await self._synthesize_with_retry(text, output_path, voice)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.error(
                 "azure_tts_synthesis_failed",
                 output=str(output_path),

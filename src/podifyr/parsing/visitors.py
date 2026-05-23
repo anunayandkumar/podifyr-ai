@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import ast
-from typing import Any
 
 from podifyr.parsing.models import ClassMetadata, FunctionMetadata, ImportInfo
 
@@ -56,9 +55,7 @@ class ModuleVisitor(ast.NodeVisitor):
         decorators = self._extract_decorators(node)
 
         is_dataclass = any("dataclass" in d for d in decorators)
-        is_abstract = any(
-            base in ("ABC", "ABCMeta", "abc.ABC") for base in base_classes
-        )
+        is_abstract = any(base in ("ABC", "ABCMeta", "abc.ABC") for base in base_classes)
 
         self.classes.append(
             ClassMetadata(
@@ -132,7 +129,7 @@ class ModuleVisitor(ast.NodeVisitor):
             if arg.annotation is not None:
                 try:
                     repr_str += f": {ast.unparse(arg.annotation)}"
-                except Exception:  # noqa: BLE001
+                except Exception:
                     repr_str += ": <unparseable>"
             result.append(repr_str)
 
@@ -150,7 +147,7 @@ class ModuleVisitor(ast.NodeVisitor):
         for base in node.bases:
             try:
                 bases.append(ast.unparse(base))
-            except Exception:  # noqa: BLE001
+            except Exception:
                 bases.append("<unknown>")
         return bases
 
@@ -163,7 +160,7 @@ class ModuleVisitor(ast.NodeVisitor):
         for dec in node.decorator_list:
             try:
                 decorators.append(ast.unparse(dec))
-            except Exception:  # noqa: BLE001
+            except Exception:
                 decorators.append("<unknown>")
         return decorators
 
@@ -209,11 +206,11 @@ class ModuleVisitor(ast.NodeVisitor):
         """Estimate cyclomatic complexity by counting branch points."""
         complexity = 1
         for child in ast.walk(node):
-            if isinstance(child, (ast.If, ast.While, ast.For, ast.AsyncFor)):
-                complexity += 1
-            elif isinstance(child, ast.ExceptHandler):
-                complexity += 1
-            elif isinstance(child, (ast.And, ast.Or)):
+            if (
+                isinstance(child, (ast.If, ast.While, ast.For, ast.AsyncFor))
+                or isinstance(child, ast.ExceptHandler)
+                or isinstance(child, (ast.And, ast.Or))
+            ):
                 complexity += 1
             elif isinstance(child, ast.BoolOp):
                 complexity += len(child.values) - 1

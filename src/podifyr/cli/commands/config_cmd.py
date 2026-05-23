@@ -12,12 +12,14 @@ from podifyr.cli.display import console
 def config_init(
     output: Path = typer.Option(
         Path(".env"),
-        "--output", "-o",
+        "--output",
+        "-o",
         help="Path to write the configuration file.",
     ),
     force: bool = typer.Option(
         False,
-        "--force", "-f",
+        "--force",
+        "-f",
         help="Overwrite existing configuration file.",
     ),
 ) -> None:

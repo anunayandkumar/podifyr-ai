@@ -9,7 +9,7 @@ from podifyr.audio.backends import BaseTTSBackend
 from podifyr.audio.backends.openai_tts import OpenAITTSBackend
 from podifyr.config import get_settings
 from podifyr.core.constants import AUDIO_CHUNK_PREFIX, AUDIO_FILE_EXTENSION
-from podifyr.core.exceptions import AudioGenerationError, ConfigurationError
+from podifyr.core.exceptions import ConfigurationError
 from podifyr.core.types import AudioChunkResult
 from podifyr.logging import get_logger
 

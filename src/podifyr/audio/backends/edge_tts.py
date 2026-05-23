@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from pathlib import Path
 
 import edge_tts
@@ -70,7 +69,7 @@ class EdgeTTSBackend(BaseTTSBackend):
             )
             return True
 
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.error(
                 "edge_tts_synthesis_failed",
                 output=str(output_path),

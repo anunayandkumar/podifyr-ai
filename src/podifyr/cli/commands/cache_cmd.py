@@ -10,7 +10,8 @@ from podifyr.cli.display import console
 def cache_clear(
     force: bool = typer.Option(
         False,
-        "--force", "-f",
+        "--force",
+        "-f",
         help="Skip confirmation prompt.",
     ),
 ) -> None:

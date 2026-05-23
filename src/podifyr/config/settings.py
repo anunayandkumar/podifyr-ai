@@ -23,15 +23,11 @@ class AzureSettings(BaseSettings):
     enabled: bool = Field(default=False, description="Use Azure OpenAI instead of public OpenAI.")
     endpoint: str = Field(default="", description="Azure OpenAI resource endpoint URL.")
     api_key: str = Field(default="", description="Azure OpenAI API key.")
-    api_version: str = Field(
-        default="2024-12-01-preview", description="Azure OpenAI API version."
-    )
+    api_version: str = Field(default="2024-12-01-preview", description="Azure OpenAI API version.")
     chat_deployment: str = Field(
         default="", description="Azure deployment name for the chat/completion model."
     )
-    tts_deployment: str = Field(
-        default="tts", description="Azure deployment name for TTS."
-    )
+    tts_deployment: str = Field(default="tts", description="Azure deployment name for TTS.")
 
 
 class LLMSettings(BaseSettings):
@@ -99,9 +95,7 @@ class LoggingSettings(BaseSettings):
     level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
         default="INFO", description="Log level."
     )
-    format: Literal["console", "json"] = Field(
-        default="console", description="Log output format."
-    )
+    format: Literal["console", "json"] = Field(default="console", description="Log output format.")
 
     @field_validator("level", mode="before")
     @classmethod

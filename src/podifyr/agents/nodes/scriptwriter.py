@@ -67,12 +67,12 @@ def scriptwriter_node(state: ScriptState) -> dict[str, str]:
         script = response.content if isinstance(response.content, str) else str(response.content)
 
         if not script.strip():
-            raise ValueError("LLM returned empty response")  # noqa: TRY301
+            raise ValueError("LLM returned empty response")
 
         logger.info("scriptwriter_complete", module=module_name, script_length=len(script))
         return {"conversational_script": script}
 
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.warning("scriptwriter_failed", module=module_name, error=str(exc))
         # Fall back to the technical summary itself
         return {"conversational_script": technical_summary}

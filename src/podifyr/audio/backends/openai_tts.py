@@ -52,7 +52,9 @@ class OpenAITTSBackend(BaseTTSBackend):
             )
         return self._session
 
-    async def synthesize(self, text: str, output_path: Path, *, voice: str = DEFAULT_TTS_VOICE) -> bool:
+    async def synthesize(
+        self, text: str, output_path: Path, *, voice: str = DEFAULT_TTS_VOICE
+    ) -> bool:
         """Synthesize text to MP3 using the OpenAI TTS API.
 
         Args:
@@ -69,7 +71,7 @@ class OpenAITTSBackend(BaseTTSBackend):
 
         try:
             return await self._synthesize_with_retry(text, output_path, voice)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.error(
                 "tts_synthesis_failed",
                 output=str(output_path),

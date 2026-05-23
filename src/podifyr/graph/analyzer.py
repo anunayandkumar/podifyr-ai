@@ -48,7 +48,7 @@ def _condensation_order(graph: nx.DiGraph) -> list[str]:
             members = sorted(condensed.nodes[scc_id]["members"])
             result.extend(members)
         return result
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.warning("condensation_failed", error=str(exc))
         return sorted(graph.nodes())
 
@@ -107,7 +107,7 @@ def _compute_depth(graph: nx.DiGraph, node: str) -> int:
                 continue
 
         return max_depth
-    except Exception:  # noqa: BLE001
+    except Exception:
         return 0
 
 
@@ -146,7 +146,7 @@ def compute_graph_metrics(graph: nx.DiGraph) -> GraphMetrics:
     if not has_cycles:
         try:
             longest_path_length = nx.dag_longest_path_length(graph)
-        except Exception:  # noqa: BLE001
+        except Exception:
             pass
 
     return GraphMetrics(

@@ -2,39 +2,42 @@
 
 from __future__ import annotations
 
-from pathlib import PurePosixPath
 from typing import Final
 
 
 # ─── File System ─────────────────────────────────────────────────────────────
 
-IGNORED_DIRECTORIES: Final[frozenset[str]] = frozenset({
-    ".git",
-    ".hg",
-    ".svn",
-    "venv",
-    ".venv",
-    "env",
-    ".env",
-    "__pycache__",
-    "node_modules",
-    ".tox",
-    ".nox",
-    ".mypy_cache",
-    ".pytest_cache",
-    ".ruff_cache",
-    "dist",
-    "build",
-    ".eggs",
-    "site-packages",
-    ".ipynb_checkpoints",
-    "migrations",
-})
+IGNORED_DIRECTORIES: Final[frozenset[str]] = frozenset(
+    {
+        ".git",
+        ".hg",
+        ".svn",
+        "venv",
+        ".venv",
+        "env",
+        ".env",
+        "__pycache__",
+        "node_modules",
+        ".tox",
+        ".nox",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
+        "dist",
+        "build",
+        ".eggs",
+        "site-packages",
+        ".ipynb_checkpoints",
+        "migrations",
+    }
+)
 
-IGNORED_FILE_PATTERNS: Final[frozenset[str]] = frozenset({
-    "setup.py",
-    "conftest.py",
-})
+IGNORED_FILE_PATTERNS: Final[frozenset[str]] = frozenset(
+    {
+        "setup.py",
+        "conftest.py",
+    }
+)
 
 PYTHON_FILE_EXTENSION: Final[str] = ".py"
 

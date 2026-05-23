@@ -6,7 +6,6 @@ import subprocess
 from pathlib import Path
 
 from podifyr.core.constants import AUDIO_CHUNK_PREFIX, AUDIO_FILE_EXTENSION
-from podifyr.core.exceptions import AudioStitchingError
 from podifyr.logging import get_logger
 
 
@@ -73,12 +72,17 @@ def _ffmpeg_concat(
         # Run FFmpeg
         cmd = [
             "ffmpeg",
-            "-y",                    # Overwrite output without asking
-            "-f", "concat",          # Use concat demuxer
-            "-safe", "0",            # Allow absolute paths
-            "-i", str(concat_list_path),
-            "-c", "copy",            # Stream copy (no re-encoding)
-            "-movflags", "+faststart",
+            "-y",  # Overwrite output without asking
+            "-f",
+            "concat",  # Use concat demuxer
+            "-safe",
+            "0",  # Allow absolute paths
+            "-i",
+            str(concat_list_path),
+            "-c",
+            "copy",  # Stream copy (no re-encoding)
+            "-movflags",
+            "+faststart",
             str(output_path),
         ]
 

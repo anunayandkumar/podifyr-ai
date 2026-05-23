@@ -35,7 +35,7 @@ class BaseTTSBackend(ABC):
     async def close(self) -> None:
         """Clean up resources (connection pools, sessions, etc.)."""
 
-    async def __aenter__(self) -> "BaseTTSBackend":
+    async def __aenter__(self) -> BaseTTSBackend:
         return self
 
     async def __aexit__(self, *args: object) -> None:

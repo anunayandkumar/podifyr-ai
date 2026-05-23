@@ -12,7 +12,6 @@ from diskcache import Cache
 
 from podifyr.core.constants import (
     APP_NAME,
-    CACHE_NAMESPACE_AUDIO,
     CACHE_NAMESPACE_PARSE,
     CACHE_NAMESPACE_SCRIPT,
     DEFAULT_CACHE_TTL_SECONDS,
@@ -90,7 +89,7 @@ class CacheManager:
             if result is not None:
                 logger.debug("cache_hit", namespace="parse", file=file_path)
                 return json.loads(result)  # type: ignore[no-any-return]
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.warning("cache_read_error", error=str(exc))
 
         return None
@@ -112,7 +111,7 @@ class CacheManager:
         try:
             self._cache.set(key, json.dumps(data), expire=self._ttl)
             logger.debug("cache_set", namespace="parse", file=file_path)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.warning("cache_write_error", error=str(exc))
 
     def get_script(self, module_name: str, metadata_hash: str) -> str | None:
@@ -127,7 +126,7 @@ class CacheManager:
             if result is not None:
                 logger.debug("cache_hit", namespace="script", module=module_name)
                 return str(result)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.warning("cache_read_error", error=str(exc))
 
         return None
@@ -142,7 +141,7 @@ class CacheManager:
         try:
             self._cache.set(key, script, expire=self._ttl)
             logger.debug("cache_set", namespace="script", module=module_name)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.warning("cache_write_error", error=str(exc))
 
     def clear(self) -> int:
@@ -159,7 +158,7 @@ class CacheManager:
             self._cache.clear()
             logger.info("cache_cleared", entries=count)
             return count
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.error("cache_clear_error", error=str(exc))
             return 0
 
@@ -176,7 +175,7 @@ class CacheManager:
                 "directory": str(self._cache_dir),
                 "ttl_seconds": self._ttl,
             }
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.warning("cache_stats_error", error=str(exc))
             return {"enabled": True, "entries": -1, "error": str(exc)}
 
@@ -185,5 +184,5 @@ class CacheManager:
         if self._cache is not None:
             try:
                 self._cache.close()
-            except Exception:  # noqa: BLE001
+            except Exception:
                 pass

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any
 
 import networkx as nx
 from langgraph.graph import END, StateGraph
@@ -13,7 +12,6 @@ from podifyr.agents.nodes.analyzer import analyzer_node
 from podifyr.agents.nodes.scriptwriter import scriptwriter_node
 from podifyr.agents.state import ScriptState
 from podifyr.cache import CacheManager
-from podifyr.core.types import ModuleGraphContext
 from podifyr.graph.analyzer import get_module_context
 from podifyr.logging import get_logger
 from podifyr.parsing.models import ModuleMetadata
@@ -92,7 +90,7 @@ def generate_script_for_module(
 
         return script
 
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.error("pipeline_failed", module=module_name, error=str(exc))
         return (
             f"[Pipeline failed for {module_name}: {metadata.module_docstring or 'No description'}. "
