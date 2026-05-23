@@ -99,7 +99,7 @@ podifyr-ai generate ./my-repo \
 ### Option 1: CLI flags (simplest)
 
 ```bash
-podifyr generate ./src \
+podifyr-ai generate ./src \
   --api-key your-azure-key \
   --azure-endpoint https://your-resource.openai.azure.com \
   --azure-deployment gpt-4o-mini \
@@ -119,5 +119,5 @@ PODIFYR_TTS_BACKEND=edge
 Then run:
 
 ```bash
-podifyr generate ./src
+podifyr-ai generate ./src
 ```

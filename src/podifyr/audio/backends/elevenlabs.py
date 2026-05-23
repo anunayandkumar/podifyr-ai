@@ -24,7 +24,7 @@ _DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"  # "Rachel" - default
 class ElevenLabsTTSBackend(BaseTTSBackend):
     """ElevenLabs TTS API backend for high-quality audio synthesis.
 
-    Requires the 'elevenlabs' extra: pip install podifyr[elevenlabs]
+    Requires the 'elevenlabs' extra: pip install podifyr-ai[elevenlabs]
     """
 
     def __init__(

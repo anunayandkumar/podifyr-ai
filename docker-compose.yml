@@ -1,0 +1,10 @@
+services:
+  podifyr:
+    build: .
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PODIFYR_LOG_FORMAT=json
+    volumes:
+      - ./output:/workspace/output
+      - ./target_repo:/workspace/target_repo:ro
+    command: ["generate", "/workspace/target_repo", "--output", "/workspace/output"]

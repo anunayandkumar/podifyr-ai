@@ -58,17 +58,17 @@ Or download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH.
 
 ```bash
 podifyr-ai --version
-podifyr generate --help
+podifyr-ai generate --help
 ```
 
 ## Minimal Usage (after install)
 
 ```bash
 # Generate walkthrough with free Edge TTS
-podifyr generate ./your-python-project --api-key sk-your-openai-key
+podifyr-ai generate ./your-python-project --api-key sk-your-openai-key
 
 # Or with Azure OpenAI
-podifyr generate ./your-python-project \
+podifyr-ai generate ./your-python-project \
   --api-key your-azure-key \
   --azure-endpoint https://your-resource.openai.azure.com \
   --azure-deployment gpt-4o-mini

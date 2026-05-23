@@ -5,8 +5,8 @@ We welcome contributions! Here's how to get started.
 ## Development Setup
 
 ```bash
-git clone https://github.com/podifyr/podifyr.git
-cd podifyr
+git clone https://github.com/anunayandkumar/podifyr-ai.git
+cd podifyr-ai
 make dev
 ```
 

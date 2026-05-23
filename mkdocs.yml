@@ -1,8 +1,8 @@
-site_name: Podifyr
-site_description: Automated developer onboarding via podcast-style audio walkthroughs
-site_url: https://podifyr.dev
-repo_url: https://github.com/podifyr/podifyr
-repo_name: podifyr/podifyr
+site_name: Podifyr-AI
+site_description: AI-powered developer onboarding via podcast-style audio walkthroughs
+site_url: https://podifyr-ai.dev
+repo_url: https://github.com/anunayandkumar/podifyr-ai
+repo_name: anunayandkumar/podifyr-ai
 
 theme:
   name: material

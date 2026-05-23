@@ -1,10 +1,10 @@
-# Podifyr Documentation
+# Podifyr-AI Documentation
 
-Welcome to the Podifyr documentation.
+Welcome to the Podifyr-AI documentation.
 
 ## Overview
 
-Podifyr is an automated developer onboarding tool that generates podcast-style audio
+Podifyr-AI is an AI-powered developer onboarding tool that generates podcast-style audio
 walkthroughs of Python codebases. It combines AST analysis, dependency graphing,
 AI-powered script generation, and text-to-speech synthesis into a single CLI command.
 
