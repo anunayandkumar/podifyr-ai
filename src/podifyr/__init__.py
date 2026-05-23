@@ -1,4 +1,4 @@
-"""Podifyr - Automated developer onboarding via podcast-style audio walkthroughs."""
+"""Podifyr - AI-powered CLI that transforms Python codebases into podcast-style audio walkthroughs using LangGraph agentic pipelines, AST analysis, dependency graph traversal, and neural text-to-speech synthesis"""
 
 from __future__ import annotations
 

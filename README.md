@@ -1,18 +1,18 @@
-# 🎙️ Podifyr
+# 🎙️ Podifyr-AI
 
-**Automated developer onboarding via podcast-style audio walkthroughs of Python codebases.**
+**AI-powered CLI that transforms Python codebases into podcast-style audio walkthroughs using LangGraph agentic pipelines, AST analysis, dependency graph traversal, and neural text-to-speech synthesis**
 
-[![CI](https://github.com/podifyr/podifyr/actions/workflows/ci.yml/badge.svg)](https://github.com/podifyr/podifyr/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/podifyr)](https://pypi.org/project/podifyr/)
-[![Python](https://img.shields.io/pypi/pyversions/podifyr)](https://pypi.org/project/podifyr/)
-[![License](https://img.shields.io/github/license/podifyr/podifyr)](LICENSE)
-[![codecov](https://codecov.io/gh/podifyr/podifyr/branch/main/graph/badge.svg)](https://codecov.io/gh/podifyr/podifyr)
+[![CI](https://github.com/anunayandkumar/podifyr-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/anunayandkumar/podifyr-ai/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/podifyr-ai)](https://pypi.org/project/podifyr-ai/)
+[![Python](https://img.shields.io/pypi/pyversions/podifyr-ai)](https://pypi.org/project/podifyr-ai/)
+[![License](https://img.shields.io/github/license/anunayandkumar/podifyr-ai)](LICENSE)
+[![codecov](https://codecov.io/gh/anunayandkumar/podifyr-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/anunayandkumar/podifyr-ai)
 
 ---
 
-## What is Podifyr?
+## What is Podifyr-AI?
 
-Podifyr is a CLI tool that analyzes a Python repository's architecture and generates a conversational, podcast-style audio walkthrough. It's designed to accelerate developer onboarding by letting new team members listen to an AI-generated explanation of the system architecture — like having a senior engineer give them a KT session on day one.
+Podifyr-AI is a CLI tool that analyzes a Python repository's architecture and generates a conversational, podcast-style audio walkthrough. It's designed to accelerate developer onboarding by letting new team members listen to an AI-generated explanation of the system architecture — like having a senior engineer give them a KT session on day one.
 
 ## How It Works
 
@@ -30,7 +30,7 @@ Repository → AST Parsing → Dependency Graph → AI Script → TTS Audio → 
 ### Installation
 
 ```bash
-pip install podifyr
+pip install podifyr-ai
 ```
 
 ### Generate a Walkthrough (Free — No API key for TTS)
@@ -40,13 +40,13 @@ pip install podifyr
 export OPENAI_API_KEY="sk-..."
 
 # Generate a walkthrough — uses free Edge TTS by default
-podifyr generate ./path/to/your/repo
+podifyr-ai generate ./path/to/your/repo
 ```
 
 ### Or pass everything via CLI (no env setup needed)
 
 ```bash
-podifyr generate ./my-project \
+podifyr-ai generate ./my-project \
   --api-key sk-your-key-here \
   --tts-backend edge \
   --output ./walkthrough
@@ -55,7 +55,7 @@ podifyr generate ./my-project \
 ### Azure OpenAI
 
 ```bash
-podifyr generate ./my-project \
+podifyr-ai generate ./my-project \
   --api-key your-azure-key \
   --azure-endpoint https://your-resource.openai.azure.com \
   --azure-deployment gpt-4o-mini \
@@ -65,7 +65,7 @@ podifyr generate ./my-project \
 ## CLI Reference
 
 ```
-podifyr generate <REPO_PATH>     Generate a podcast walkthrough
+podifyr-ai generate <REPO_PATH>     Generate a podcast walkthrough
 
 Options:
   --output, -o PATH              Output directory [default: ./podifyr_output]
@@ -80,11 +80,11 @@ Options:
   --graph-details                 Show dependency graph metrics
   --verbose, -V                   Enable debug logging
 
-podifyr config init              Create .env configuration file
-podifyr config show              Display current resolved settings
-podifyr cache clear              Clear cached data
-podifyr cache stats              Show cache statistics
-podifyr --version                Show version
+podifyr-ai config init              Create .env configuration file
+podifyr-ai config show              Display current resolved settings
+podifyr-ai cache clear              Clear cached data
+podifyr-ai cache stats              Show cache statistics
+podifyr-ai --version                Show version
 ```
 
 ## TTS Backends
@@ -93,7 +93,7 @@ podifyr --version                Show version
 |---------|------|-----------------|---------|-------|
 | **Edge** (default) | Free | No | Good (Microsoft Neural) | None |
 | **OpenAI** | ~$0.015/1K chars | Yes (`OPENAI_API_KEY`) | Good | API key |
-| **ElevenLabs** | Varies | Yes (`ELEVENLABS_API_KEY`) | Excellent | `pip install podifyr[elevenlabs]` |
+| **ElevenLabs** | Varies | Yes (`ELEVENLABS_API_KEY`) | Excellent | `pip install podifyr-ai[elevenlabs]` |
 
 ## Configuration
 
@@ -101,10 +101,10 @@ Settings are resolved in priority order: **CLI flags > Environment variables > `
 
 ```bash
 # Generate a template .env file
-podifyr config init
+podifyr-ai config init
 
 # View resolved configuration
-podifyr config show
+podifyr-ai config show
 ```
 
 ### Key Environment Variables
@@ -174,8 +174,8 @@ winget install ffmpeg
 
 ```bash
 # Clone and install in dev mode
-git clone https://github.com/podifyr/podifyr.git
-cd podifyr
+git clone https://github.com/anunayandkumar/podifyr-ai.git
+cd podifyr-ai
 pip install -e ".[dev,docs,all]"
 
 # Run tests

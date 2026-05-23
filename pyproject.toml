@@ -3,14 +3,14 @@ requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
-name = "podifyr"
+name = "podifyr-ai"
 dynamic = ["version"]
 description = "Automated developer onboarding via podcast-style audio walkthroughs of Python codebases."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
-    { name = "Podifyr Contributors", email = "maintainers@podifyr.dev" },
+    { name = "Podifyr Contributors", email = "maintainers@podifyr-ai.dev" },
 ]
 keywords = ["cli", "onboarding", "ast", "audio", "developer-tools", "podcast", "architecture"]
 classifiers = [
@@ -48,7 +48,7 @@ dependencies = [
 
 [project.optional-dependencies]
 elevenlabs = ["elevenlabs>=0.2.0"]
-all = ["podifyr[elevenlabs]"]
+all = ["podifyr-ai[elevenlabs]"]
 dev = [
     "mypy>=1.8.0",
     "pytest>=7.0.0",
@@ -70,7 +70,7 @@ docs = [
 ]
 
 [project.scripts]
-podifyr = "podifyr.cli:app"
+podifyr-ai = "podifyr.cli:app"
 
 [project.entry-points."podifyr.audio_backends"]
 openai = "podifyr.audio.backends.openai_tts:OpenAITTSBackend"
@@ -79,11 +79,11 @@ azure = "podifyr.audio.backends.azure_tts:AzureTTSBackend"
 elevenlabs = "podifyr.audio.backends.elevenlabs:ElevenLabsTTSBackend"
 
 [project.urls]
-Homepage = "https://github.com/podifyr/podifyr"
-Documentation = "https://podifyr.dev"
-Repository = "https://github.com/podifyr/podifyr"
-Issues = "https://github.com/podifyr/podifyr/issues"
-Changelog = "https://github.com/podifyr/podifyr/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/anunayandkumar/podifyr-ai"
+Documentation = "https://podifyr-ai.dev"
+Repository = "https://github.com/anunayandkumar/podifyr-ai"
+Issues = "https://github.com/anunayandkumar/podifyr-ai/issues"
+Changelog = "https://github.com/anunayandkumar/podifyr-ai/blob/main/CHANGELOG.md"
 
 [tool.hatch.version]
 source = "vcs"

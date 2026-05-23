@@ -16,7 +16,7 @@ from podifyr.cli.display import console
 # ─── Main App ────────────────────────────────────────────────────────────────
 
 app = typer.Typer(
-    name="podifyr",
+    name="podifyr-ai",
     help="Generate podcast-style audio walkthroughs of Python codebases.",
     no_args_is_help=True,
     add_completion=True,
@@ -44,7 +44,7 @@ cache_app = typer.Typer(
 def _version_callback(value: bool) -> None:
     """Print version information and exit."""
     if value:
-        console.print(f"[bold blue]podifyr[/bold blue] v{__version__}")
+        console.print(f"[bold blue]podifyr-ai[/bold blue] v{__version__}")
         raise typer.Exit()
 
 

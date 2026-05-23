@@ -39,9 +39,9 @@ def print_banner() -> None:
     """Print the podifyr startup banner."""
     console.print(
         Panel.fit(
-            f"[bold blue]podifyr[/bold blue] v{__version__}\n"
-            "[dim]Automated podcast-style architecture walkthroughs[/dim]",
-            title="🎙️  Podifyr",
+            f"[bold blue]podifyr-ai[/bold blue] v{__version__}\n"
+            "[dim]AI-powered podcast-style architecture walkthroughs[/dim]",
+            title="🎙️  Podifyr-AI",
             border_style="blue",
         )
     )
