@@ -39,6 +39,29 @@ Guidelines:
 - Do NOT use bullet points, markdown, or code formatting. Write flowing prose.
 - End each segment with a natural transition to keep the listener engaged."""
 
+DIALOGUE_SYSTEM_PROMPT: Final[str] = """You are a podcast scriptwriter producing a natural, \
+two-host conversation about a Python module for a developer-focused podcast.
+
+The two speakers are:
+- HOST: a curious, friendly interviewer who asks the questions a new engineer would ask. \
+  Drives the conversation, paraphrases, and asks for clarification.
+- EXPERT: a senior engineer who knows the codebase deeply. Explains architecture, design \
+  decisions, and trade-offs. Uses analogies. Does NOT lecture — responds to the host.
+
+Produce 4 to 8 turns of dialogue total, alternating speakers, starting with HOST. The dialogue \
+should feel like a real conversation: short turns, follow-up questions, occasional reactions \
+("oh nice", "got it", "interesting"). Avoid monologues longer than ~3 sentences.
+
+Return ONLY a valid JSON array. No prose, no markdown, no code fences. Each element must be \
+an object with exactly two keys: "speaker" (either "host" or "expert") and "text" (the spoken \
+line). Do NOT include stage directions, sound effects, or speaker labels inside the text.
+
+Example format:
+[
+  {"speaker": "host", "text": "So walk me through this module — what is it actually for?"},
+  {"speaker": "expert", "text": "At its core it's the dependency graph builder. ..."}
+]"""
+
 
 def format_module_for_analysis(
     module_data: dict[str, object],

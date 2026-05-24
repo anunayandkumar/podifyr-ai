@@ -1,6 +1,6 @@
 # 🎙️ Podifyr-AI
 
-**AI-powered CLI that transforms Python codebases into podcast-style audio walkthroughs using LangGraph agentic pipelines, AST analysis, dependency graph traversal, and neural text-to-speech synthesis**
+**AI-powered CLI that transforms Python codebases into true multi-speaker podcast walkthroughs using LangGraph agentic pipelines, AST analysis, dependency graph traversal, and neural text-to-speech synthesis**
 
 [![CI](https://github.com/anunayandkumar/podifyr-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/anunayandkumar/podifyr-ai/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/podifyr-ai)](https://pypi.org/project/podifyr-ai/)
@@ -17,13 +17,15 @@ Podifyr-AI is a CLI tool that analyzes a Python repository's architecture and ge
 ## How It Works
 
 ```
-Repository → AST Parsing → Dependency Graph → AI Script → TTS Audio → 🎧 Walkthrough
+Repository → AST Parsing → Dependency Graph → Host ↔ Expert Dialogue → Multi-Voice TTS → 🎧
 ```
 
 1. **Parse**: Traverses the repo and extracts structural metadata (classes, functions, imports) using Python's AST module
 2. **Graph**: Builds a directed dependency graph to understand module relationships and reading order
-3. **Script**: Uses a multi-agent LangGraph pipeline (Analyzer → Scriptwriter) to generate conversational explanations
-4. **Audio**: Synthesizes speech via Edge TTS (free) or OpenAI TTS with concurrent chunk generation and FFmpeg stitching
+3. **Script**: Runs a multi-agent LangGraph pipeline — the **Analyzer** produces a technical summary, then the **Dialogue Writer** rewrites it as a Host/Expert conversation (JSON turns)
+4. **Audio**: Synthesizes each turn with a distinct TTS voice (free Edge TTS by default), then FFmpeg-stitches the full episode
+
+> Prefer a single-narrator walkthrough? Pass `--style monologue` to switch back to the classic single-voice mode.
 
 ## Quick Start
 
@@ -65,6 +67,23 @@ podifyr-ai generate ./my-project \
 
 By default audio is synthesized with the free **Edge TTS** backend — no API key required.
 
+### Dialogue voices (default mode)
+
+Dialogue mode uses two distinct voices. Defaults work for the OpenAI TTS backend; for **Edge TTS** override them with Microsoft Neural voice ids:
+
+```bash
+podifyr-ai generate ./my-project \
+  --provider ollama --model llama3 \
+  --host-voice en-US-AriaNeural \
+  --expert-voice en-US-GuyNeural
+```
+
+To get a classic single-voice walkthrough instead:
+
+```bash
+podifyr-ai generate ./my-project --style monologue --voice nova
+```
+
 ## CLI Reference
 
 ```
@@ -81,8 +100,11 @@ Provider options:
 
 Output and audio options:
   --output, -o PATH               Output directory [default: ./podifyr_output]
+  --style TEXT                    Podcast style: 'dialogue' (default, two speakers) or 'monologue'
   --tts-backend TEXT              TTS: 'edge' (free, default), 'openai', 'elevenlabs'
-  --voice TEXT                    Voice (e.g. alloy, echo, fable, onyx, nova, shimmer)
+  --voice TEXT                    Voice for monologue style (e.g. alloy, echo, fable, onyx, nova)
+  --host-voice TEXT               Voice id for the Host speaker (dialogue mode)
+  --expert-voice TEXT             Voice id for the Expert speaker (dialogue mode)
   --tts-api-key TEXT              API key for the TTS backend (falls back to --api-key)
   --skip-audio                    Generate script only, skip audio
   --no-cache                      Disable caching for this run
@@ -109,9 +131,10 @@ Podifyr-AI is purely CLI-driven — there is **no `.env` file, no `PODIFYR_*` en
 
 ## Features
 
+- 🎧 **True two-speaker dialogue** — Host ↔ Expert conversation with distinct TTS voices (default), or single-narrator monologue mode (`--style monologue`)
 - 🧠 **AST-based analysis** — Extracts architecture without executing code
 - 🔗 **Dependency graphing** — Cycle-aware topological sorting with NetworkX
-- 🤖 **Multi-agent pipeline** — LangGraph orchestration with analyzer + scriptwriter nodes
+- 🤖 **Multi-agent pipeline** — LangGraph orchestration with Analyzer + (Scriptwriter │ Dialogue) nodes
 - 🤝 **Unified LLM interface** — One CLI, three providers: OpenAI, Azure OpenAI, Ollama
 - 🔊 **Free TTS included** — Edge TTS (Microsoft Neural voices) works out of the box
 - 🔌 **Plugin backends** — Swappable TTS providers (Edge, OpenAI, ElevenLabs)

@@ -6,7 +6,7 @@ No environment variables, no .env files. All values come from CLI flags
 
 from __future__ import annotations
 
-from pathlib import Path  # noqa: TCH003
+from pathlib import Path  # noqa: TC003
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field, field_validator
 
 LLMProvider = Literal["openai", "azure", "ollama"]
 TTSBackend = Literal["edge", "openai", "elevenlabs"]
+PodcastStyle = Literal["monologue", "dialogue"]
 
 
 class LLMConfig(BaseModel):
@@ -48,6 +49,11 @@ class TTSConfig(BaseModel):
 
     # When LLM provider is "azure" and backend is "openai", these are used.
     azure_deployment: str = "tts"
+
+    # Multi-speaker podcast settings
+    style: PodcastStyle = "dialogue"
+    host_voice: str = "nova"  # OpenAI default; Edge users override (e.g. en-US-AriaNeural)
+    expert_voice: str = "onyx"  # OpenAI default; Edge users override (e.g. en-US-GuyNeural)
 
 
 class CacheConfig(BaseModel):

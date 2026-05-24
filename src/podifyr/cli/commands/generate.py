@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -48,48 +47,63 @@ def generate(
         help="LLM provider: 'openai', 'azure', or 'ollama'.",
         case_sensitive=False,
     ),
-    model: Optional[str] = typer.Option(  # noqa: UP007
+    model: str | None = typer.Option(
         None,
         "--model",
         "-m",
         help="LLM model name (e.g. gpt-4o-mini, llama3). Defaults to gpt-4o-mini for openai.",
     ),
-    api_key: Optional[str] = typer.Option(  # noqa: UP007
+    api_key: str | None = typer.Option(
         None,
         "--api-key",
         help="API key for the LLM provider (openai/azure). Not needed for ollama.",
     ),
-    azure_endpoint: Optional[str] = typer.Option(  # noqa: UP007
+    azure_endpoint: str | None = typer.Option(
         None,
         "--azure-endpoint",
         help="Azure OpenAI endpoint URL (required when --provider=azure).",
     ),
-    azure_deployment: Optional[str] = typer.Option(  # noqa: UP007
+    azure_deployment: str | None = typer.Option(
         None,
         "--azure-deployment",
         help="Azure chat model deployment name (required when --provider=azure).",
     ),
-    azure_api_version: Optional[str] = typer.Option(  # noqa: UP007
+    azure_api_version: str | None = typer.Option(
         None,
         "--azure-api-version",
         help="Azure OpenAI API version (default: 2024-12-01-preview).",
     ),
-    ollama_base_url: Optional[str] = typer.Option(  # noqa: UP007
+    ollama_base_url: str | None = typer.Option(
         None,
         "--ollama-base-url",
         help="Base URL of the Ollama server (default: http://localhost:11434).",
     ),
-    tts_backend: Optional[str] = typer.Option(  # noqa: UP007
+    tts_backend: str | None = typer.Option(
         None,
         "--tts-backend",
         help="TTS backend: 'edge' (free, default), 'openai', or 'elevenlabs'.",
     ),
-    voice: Optional[str] = typer.Option(  # noqa: UP007
+    voice: str | None = typer.Option(
         None,
         "--voice",
-        help="TTS voice. OpenAI: alloy/echo/fable/onyx/nova/shimmer.",
+        help="TTS voice for monologue style. OpenAI: alloy/echo/fable/onyx/nova/shimmer.",
     ),
-    tts_api_key: Optional[str] = typer.Option(  # noqa: UP007
+    style: str | None = typer.Option(
+        None,
+        "--style",
+        help="Podcast style: 'dialogue' (default, two speakers) or 'monologue' (single voice).",
+    ),
+    host_voice: str | None = typer.Option(
+        None,
+        "--host-voice",
+        help="Voice id for the Host speaker in dialogue mode (e.g. nova, en-US-AriaNeural).",
+    ),
+    expert_voice: str | None = typer.Option(
+        None,
+        "--expert-voice",
+        help="Voice id for the Expert speaker in dialogue mode (e.g. onyx, en-US-GuyNeural).",
+    ),
+    tts_api_key: str | None = typer.Option(
         None,
         "--tts-api-key",
         help="API key for the TTS backend (openai/elevenlabs). Falls back to --api-key.",
@@ -110,7 +124,7 @@ def generate(
         "-V",
         help="Enable verbose debug logging.",
     ),
-    concurrency: Optional[int] = typer.Option(  # noqa: UP007
+    concurrency: int | None = typer.Option(
         None,
         "--concurrency",
         "-c",
@@ -182,6 +196,16 @@ def generate(
         tts_kwargs["api_key"] = tts_api_key
     if concurrency:
         tts_kwargs["max_concurrent_requests"] = concurrency
+    if style:
+        style_norm = style.lower().strip()
+        if style_norm not in ("dialogue", "monologue"):
+            print_error(f"Unknown style '{style}'. Must be 'dialogue' or 'monologue'.")
+            raise typer.Exit(code=2)
+        tts_kwargs["style"] = style_norm
+    if host_voice:
+        tts_kwargs["host_voice"] = host_voice
+    if expert_voice:
+        tts_kwargs["expert_voice"] = expert_voice
     tts_cfg = TTSConfig(**tts_kwargs)  # type: ignore[arg-type]
 
     cache_cfg = CacheConfig(enabled=not no_cache)
@@ -216,6 +240,8 @@ def generate(
             chunks_dir=chunks_dir,
             cache=cache,
             voice=voice,
+            host_voice=host_voice,
+            expert_voice=expert_voice,
             skip_audio=skip_audio,
             concurrency=concurrency,
             show_graph_details=show_graph_details,
@@ -234,6 +260,8 @@ def _run_pipeline(
     chunks_dir: Path,
     cache: CacheManager,  # type: ignore[name-defined]  # noqa: F821
     voice: str | None,
+    host_voice: str | None,
+    expert_voice: str | None,
     skip_audio: bool,
     concurrency: int | None,
     show_graph_details: bool,
@@ -275,12 +303,19 @@ def _run_pipeline(
             print_graph_details(metrics)
 
         # ── Step 3: Generate Script ──────────────────────────────────────
+        from podifyr.config import get_settings
+
+        current_style = get_settings().tts.style
+
         task_script = progress.add_task(
-            "[cyan]Generating walkthrough script...",
+            f"[cyan]Generating {current_style} script...",
             total=len(reading_order),
         )
 
-        from podifyr.agents import generate_script_for_module
+        from podifyr.agents import (
+            generate_dialogue_for_module,
+            generate_script_for_module,
+        )
         from podifyr.utils.fs import normalize_module_path
 
         # Build module lookup
@@ -290,6 +325,7 @@ def _run_pipeline(
             module_lookup[name] = mod
 
         script_chunks: list[str] = []
+        dialogues: list[list[dict[str, str]]] = []
         script_module_names: list[str] = []
 
         for module_name in reading_order:
@@ -298,8 +334,18 @@ def _run_pipeline(
                 progress.advance(task_script)
                 continue
 
-            chunk = generate_script_for_module(metadata, dep_graph, cache=cache)  # type: ignore[arg-type]
-            script_chunks.append(chunk)
+            if current_style == "dialogue":
+                turns = generate_dialogue_for_module(metadata, dep_graph, cache=cache)  # type: ignore[arg-type]
+                dialogues.append(turns)
+                # Also build a readable transcript chunk for the saved script
+                transcript = "\n\n".join(
+                    f"**{t['speaker'].capitalize()}:** {t['text']}" for t in turns
+                )
+                script_chunks.append(transcript)
+            else:
+                chunk = generate_script_for_module(metadata, dep_graph, cache=cache)  # type: ignore[arg-type]
+                script_chunks.append(chunk)
+
             script_module_names.append(module_name)
             progress.advance(task_script)
 
@@ -315,15 +361,28 @@ def _run_pipeline(
         # ── Step 4: Synthesize Audio ─────────────────────────────────────
         task_audio = progress.add_task("[cyan]Synthesizing audio...", total=2)
 
-        from podifyr.audio import generate_audio_chunks, stitch_audio
+        from podifyr.audio import (
+            generate_audio_chunks,
+            generate_dialogue_audio_chunks,
+            stitch_audio,
+        )
 
         try:
-            audio_paths = generate_audio_chunks(
-                script_chunks=script_chunks,
-                output_dir=chunks_dir,
-                voice=voice,
-                max_concurrent=concurrency,
-            )
+            if current_style == "dialogue":
+                audio_paths = generate_dialogue_audio_chunks(
+                    dialogues=dialogues,  # type: ignore[arg-type]
+                    output_dir=chunks_dir,
+                    host_voice=host_voice,
+                    expert_voice=expert_voice,
+                    max_concurrent=concurrency,
+                )
+            else:
+                audio_paths = generate_audio_chunks(
+                    script_chunks=script_chunks,
+                    output_dir=chunks_dir,
+                    voice=voice,
+                    max_concurrent=concurrency,
+                )
             progress.advance(task_audio)
         except Exception as exc:
             print_error(str(exc))

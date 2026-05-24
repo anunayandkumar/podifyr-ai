@@ -172,3 +172,113 @@ class TestScriptwriterNode:
         result = scriptwriter_node(state)
 
         assert "No content available" in result["conversational_script"]
+
+
+class TestDialogueNode:
+    """Tests for the multi-speaker dialogue agent node."""
+
+    @patch("podifyr.agents.nodes.dialogue.build_chat_model")
+    def test_dialogue_parses_valid_json(self, mock_builder: MagicMock, mock_settings: None) -> None:
+        from podifyr.agents.nodes.dialogue import dialogue_node
+
+        mock_response = MagicMock()
+        mock_response.content = (
+            '[{"speaker":"host","text":"What is this module?"},'
+            '{"speaker":"expert","text":"It builds the dependency graph."}]'
+        )
+        mock_builder.return_value.invoke.return_value = mock_response
+
+        state = _make_test_state()
+        state["technical_summary"] = "Module builds the dependency graph."
+
+        result = dialogue_node(state)
+
+        assert "dialogue" in result
+        turns = result["dialogue"]
+        assert len(turns) == 2
+        assert turns[0]["speaker"] == "host"
+        assert turns[1]["speaker"] == "expert"
+        assert "dependency graph" in turns[1]["text"]
+
+    @patch("podifyr.agents.nodes.dialogue.build_chat_model")
+    def test_dialogue_handles_code_fences(
+        self, mock_builder: MagicMock, mock_settings: None
+    ) -> None:
+        from podifyr.agents.nodes.dialogue import dialogue_node
+
+        mock_response = MagicMock()
+        mock_response.content = (
+            '```json\n[{"speaker":"host","text":"Hi"},{"speaker":"expert","text":"Hello"}]\n```'
+        )
+        mock_builder.return_value.invoke.return_value = mock_response
+
+        state = _make_test_state()
+        state["technical_summary"] = "Anything."
+
+        result = dialogue_node(state)
+        assert len(result["dialogue"]) == 2
+
+    @patch("podifyr.agents.nodes.dialogue.build_chat_model")
+    def test_dialogue_normalizes_unknown_speaker(
+        self, mock_builder: MagicMock, mock_settings: None
+    ) -> None:
+        from podifyr.agents.nodes.dialogue import dialogue_node
+
+        mock_response = MagicMock()
+        mock_response.content = (
+            '[{"speaker":"narrator","text":"Some line"},{"speaker":"HOST","text":"Question?"}]'
+        )
+        mock_builder.return_value.invoke.return_value = mock_response
+
+        state = _make_test_state()
+        state["technical_summary"] = "Anything."
+
+        result = dialogue_node(state)
+        turns = result["dialogue"]
+        # Unknown speakers fall back to "expert"; case is normalized
+        assert turns[0]["speaker"] == "expert"
+        assert turns[1]["speaker"] == "host"
+
+    @patch("podifyr.agents.nodes.dialogue.build_chat_model")
+    def test_dialogue_fallback_on_invalid_json(
+        self, mock_builder: MagicMock, mock_settings: None
+    ) -> None:
+        from podifyr.agents.nodes.dialogue import dialogue_node
+
+        mock_response = MagicMock()
+        mock_response.content = "not even close to JSON"
+        mock_builder.return_value.invoke.return_value = mock_response
+
+        state = _make_test_state()
+        state["technical_summary"] = "Some technical content here."
+
+        result = dialogue_node(state)
+        turns = result["dialogue"]
+        assert len(turns) == 2
+        assert turns[0]["speaker"] == "host"
+        assert turns[1]["speaker"] == "expert"
+
+    @patch("podifyr.agents.nodes.dialogue.build_chat_model")
+    def test_dialogue_fallback_on_llm_error(
+        self, mock_builder: MagicMock, mock_settings: None
+    ) -> None:
+        from podifyr.agents.nodes.dialogue import dialogue_node
+
+        mock_builder.return_value.invoke.side_effect = Exception("API down")
+
+        state = _make_test_state()
+        state["technical_summary"] = "Technical content."
+
+        result = dialogue_node(state)
+        assert len(result["dialogue"]) == 2
+
+    def test_dialogue_empty_input(self, mock_settings: None) -> None:
+        from podifyr.agents.nodes.dialogue import dialogue_node
+
+        state = _make_test_state()
+        state["technical_summary"] = ""
+
+        result = dialogue_node(state)
+        turns = result["dialogue"]
+        assert len(turns) == 2
+        assert "error" in result

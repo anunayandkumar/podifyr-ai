@@ -4,14 +4,19 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from podifyr.audio.backends import BaseTTSBackend  # noqa: TCH001
+from podifyr.audio.backends import BaseTTSBackend  # noqa: TC001
 from podifyr.audio.backends.openai_tts import OpenAITTSBackend
 from podifyr.config import get_settings
 from podifyr.core.constants import AUDIO_CHUNK_PREFIX, AUDIO_FILE_EXTENSION
 from podifyr.core.exceptions import ConfigurationError
 from podifyr.core.types import AudioChunkResult
 from podifyr.logging import get_logger
+
+
+if TYPE_CHECKING:
+    from podifyr.agents.state import DialogueTurn
 
 
 logger = get_logger(__name__)
@@ -228,6 +233,107 @@ def generate_audio_chunks(
         succeeded=len(successful_paths),
         failed=failed_count,
         total=len(script_chunks),
+    )
+
+    return successful_paths
+
+
+async def _generate_all_dialogue_chunks(
+    turns: list[tuple[str, str]],
+    output_dir: Path,
+    max_concurrent: int,
+) -> list[AudioChunkResult]:
+    """Generate audio for a flat list of (text, voice) pairs."""
+    backend = _create_backend()
+    semaphore = asyncio.Semaphore(max_concurrent)
+
+    try:
+        tasks: list[asyncio.Task[AudioChunkResult]] = []
+        for idx, (text, voice) in enumerate(turns):
+            output_path = output_dir / f"{AUDIO_CHUNK_PREFIX}{idx:04d}{AUDIO_FILE_EXTENSION}"
+            tasks.append(
+                asyncio.create_task(
+                    _generate_chunk(
+                        backend=backend,
+                        text=text,
+                        output_path=output_path,
+                        voice=voice,
+                        index=idx,
+                        semaphore=semaphore,
+                    )
+                )
+            )
+        results = await asyncio.gather(*tasks)
+    finally:
+        await backend.close()
+
+    return sorted(results, key=lambda r: r["index"])
+
+
+def generate_dialogue_audio_chunks(
+    dialogues: list[list[DialogueTurn]],
+    output_dir: Path,
+    host_voice: str | None = None,
+    expert_voice: str | None = None,
+    max_concurrent: int | None = None,
+) -> list[Path]:
+    """Synthesize a multi-speaker dialogue using two distinct TTS voices.
+
+    Args:
+        dialogues: One list of turns per module, preserved in order.
+        output_dir: Directory for the per-turn audio files.
+        host_voice: Voice id for the "host" speaker (defaults to settings).
+        expert_voice: Voice id for the "expert" speaker (defaults to settings).
+        max_concurrent: Max concurrent TTS calls.
+
+    Returns:
+        Paths to successfully generated audio files in playback order.
+    """
+    settings = get_settings()
+    host_voice = host_voice or settings.tts.host_voice
+    expert_voice = expert_voice or settings.tts.expert_voice
+    max_concurrent = max_concurrent or settings.tts.max_concurrent_requests
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Flatten all turns across all modules into (text, voice) pairs
+    flat: list[tuple[str, str]] = []
+    for module_turns in dialogues:
+        for turn in module_turns:
+            speaker = turn.get("speaker", "expert")
+            voice = host_voice if speaker == "host" else expert_voice
+            flat.append((turn["text"], voice))
+
+    logger.info(
+        "dialogue_audio_started",
+        modules=len(dialogues),
+        turns=len(flat),
+        backend=settings.tts.backend,
+        host_voice=host_voice,
+        expert_voice=expert_voice,
+        concurrency=max_concurrent,
+    )
+
+    results = asyncio.run(
+        _generate_all_dialogue_chunks(
+            turns=flat, output_dir=output_dir, max_concurrent=max_concurrent
+        )
+    )
+
+    successful_paths: list[Path] = []
+    failed_count = 0
+    for result in results:
+        if result["success"] and result["path"] is not None:
+            successful_paths.append(result["path"])
+        else:
+            failed_count += 1
+            logger.warning("dialogue_chunk_failed", index=result["index"], error=result["error"])
+
+    logger.info(
+        "dialogue_audio_complete",
+        succeeded=len(successful_paths),
+        failed=failed_count,
+        total=len(flat),
     )
 
     return successful_paths
