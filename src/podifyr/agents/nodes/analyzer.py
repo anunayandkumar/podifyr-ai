@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
 
 from podifyr.agents.prompts import ANALYZER_SYSTEM_PROMPT, format_module_for_analysis
-from podifyr.agents.state import ScriptState
-from podifyr.config import get_settings
+from podifyr.agents.state import ScriptState  # noqa: TCH001
+from podifyr.llm import build_chat_model
 from podifyr.logging import get_logger
 from podifyr.parsing.models import ModuleMetadata
 
@@ -23,31 +22,14 @@ def analyzer_node(state: ScriptState) -> dict[str, str]:
 
     Falls back to a basic summary if the LLM call fails.
     """
-    settings = get_settings()
     module_name = state["module_name"]
-
     module_data = state["module_metadata"]
     graph_ctx = state["graph_context"]
 
     formatted_input = format_module_for_analysis(module_data, graph_ctx, module_name)
 
     try:
-        if settings.is_azure:
-            llm = AzureChatOpenAI(
-                azure_endpoint=settings.azure.endpoint,
-                azure_deployment=settings.azure.chat_deployment,
-                openai_api_version=settings.azure.api_version,
-                openai_api_key=settings.azure.api_key or None,
-                temperature=0.2,
-                max_tokens=settings.llm.max_tokens,
-            )
-        else:
-            llm = ChatOpenAI(
-                model=settings.llm.model,
-                temperature=0.2,  # Low temperature for factual analysis
-                max_tokens=settings.llm.max_tokens,
-                api_key=settings.effective_openai_key or None,
-            )
+        llm = build_chat_model(temperature=0.2)
 
         messages = [
             SystemMessage(content=ANALYZER_SYSTEM_PROMPT),

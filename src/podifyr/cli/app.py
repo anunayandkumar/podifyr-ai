@@ -8,7 +8,6 @@ import typer
 
 from podifyr import __version__
 from podifyr.cli.commands.cache_cmd import cache_clear, cache_stats
-from podifyr.cli.commands.config_cmd import config_init, config_show
 from podifyr.cli.commands.generate import generate
 from podifyr.cli.display import console
 
@@ -24,12 +23,6 @@ app = typer.Typer(
 )
 
 # ─── Sub-command Groups ──────────────────────────────────────────────────────
-
-config_app = typer.Typer(
-    name="config",
-    help="Manage podifyr configuration.",
-    no_args_is_help=True,
-)
 
 cache_app = typer.Typer(
     name="cache",
@@ -50,7 +43,7 @@ def _version_callback(value: bool) -> None:
 
 @app.callback()
 def main_callback(
-    version: Optional[bool] = typer.Option(  # noqa: UP007
+    version: Optional[bool] = typer.Option(  # noqa: UP007, ARG001
         None,
         "--version",
         "-v",
@@ -59,7 +52,7 @@ def main_callback(
         is_eager=True,
     ),
 ) -> None:
-    """Podifyr: Automated developer onboarding via AI-powered podcast walkthroughs."""
+    """Podifyr-AI: Automated developer onboarding via AI-powered podcast walkthroughs."""
 
 
 # ─── Register Commands ───────────────────────────────────────────────────────
@@ -68,11 +61,6 @@ def main_callback(
 app.command(name="generate", help="Generate a podcast walkthrough of a Python repository.")(
     generate
 )
-
-# Config sub-commands
-config_app.command(name="init", help="Initialize a .env configuration file.")(config_init)
-config_app.command(name="show", help="Display current resolved configuration.")(config_show)
-app.add_typer(config_app)
 
 # Cache sub-commands
 cache_app.command(name="clear", help="Clear all cached data.")(cache_clear)

@@ -3,37 +3,31 @@
 from __future__ import annotations
 
 import tempfile
+from collections.abc import Generator  # noqa: TCH003
 from pathlib import Path
-from typing import Generator
 
 import pytest
 
 
 @pytest.fixture(autouse=True)
 def _isolate_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Isolate tests from the user's .env file by changing CWD and clearing env vars."""
-    from podifyr.config.settings import reset_settings
+    """Reset runtime settings between tests so cases never leak into each other."""
+    from podifyr.config import reset_settings
 
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setenv("PODIFYR_AZURE_ENABLED", "false")
-    monkeypatch.setenv("PODIFYR_AZURE_ENDPOINT", "")
-    monkeypatch.setenv("PODIFYR_AZURE_API_KEY", "")
-    monkeypatch.setenv("PODIFYR_TTS_BACKEND", "edge")
-    monkeypatch.delenv("PODIFYR_AZURE_API_VERSION", raising=False)
-    monkeypatch.delenv("PODIFYR_AZURE_CHAT_DEPLOYMENT", raising=False)
-    monkeypatch.delenv("PODIFYR_AZURE_TTS_DEPLOYMENT", raising=False)
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    reset_settings()
+    yield
     reset_settings()
 
 
-@pytest.fixture
+@pytest.fixture()
 def tmp_dir() -> Generator[Path, None, None]:
     """Provide a temporary directory that is cleaned up after the test."""
     with tempfile.TemporaryDirectory() as td:
         yield Path(td)
 
 
-@pytest.fixture
+@pytest.fixture()
 def sample_python_file(tmp_dir: Path) -> Path:
     """Create a sample Python file for parsing tests."""
     file_path = tmp_dir / "sample_module.py"
@@ -100,7 +94,7 @@ if __name__ == "__main__":
     return file_path
 
 
-@pytest.fixture
+@pytest.fixture()
 def sample_repo(tmp_dir: Path) -> Path:
     """Create a sample repository structure for integration tests."""
     repo_dir = tmp_dir / "sample_repo"
@@ -177,13 +171,13 @@ def format_output(data: str, width: int = 80) -> str:
     return repo_dir
 
 
-@pytest.fixture
-def mock_settings(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Provide mock settings for tests that don't need real API keys."""
-    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-fake-key-for-testing")
-    monkeypatch.setenv("PODIFYR_CACHE_ENABLED", "false")
-    monkeypatch.setenv("PODIFYR_LOG_LEVEL", "DEBUG")
+@pytest.fixture()
+def mock_settings() -> None:  # noqa: PT004
+    """Install an in-memory settings object with a fake OpenAI API key for tests."""
+    from podifyr.config import LLMConfig, Settings, set_settings
 
-    # Reset cached settings
-    from podifyr.config.settings import reset_settings
-    reset_settings()
+    set_settings(
+        Settings(
+            llm=LLMConfig(provider="openai", api_key="sk-test-fake-key-for-testing"),
+        )
+    )

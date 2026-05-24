@@ -1,6 +1,6 @@
 # Plugin System
 
-Podifyr supports pluggable TTS backends via Python entry points.
+Podifyr-AI supports pluggable TTS backends via Python entry points.
 
 ## Built-in Backends
 
@@ -24,15 +24,15 @@ Uses Microsoft's free Edge neural voices. No API key required. Voice names (allo
 
 ### OpenAI TTS
 
-Uses the OpenAI TTS API. Requires `OPENAI_API_KEY`.
+Uses the OpenAI TTS API. Pass the key via `--tts-api-key` (or reuse `--api-key`).
 
 ### Azure TTS
 
-Uses Azure OpenAI TTS deployment. Requires Azure credentials.
+Used automatically when you combine `--provider azure` with `--tts-backend openai`. The TTS deployment defaults to `tts` and reuses the Azure endpoint, API version, and key.
 
 ### ElevenLabs
 
-Premium quality voices. Install with: `pip install podifyr-ai[elevenlabs]`
+Premium quality voices. Install with: `pip install podifyr-ai[elevenlabs]`. Pass the key via `--tts-api-key`.
 
 ## Creating a Custom Backend
 
@@ -73,8 +73,7 @@ custom = "my_package.backend:MyCustomBackend"
 ### 3. Use It
 
 ```bash
-export PODIFYR_TTS_BACKEND=custom
-podifyr-ai generate ./my-repo
+podifyr-ai generate ./my-repo --tts-backend custom
 ```
 
 ## Protocol Definition

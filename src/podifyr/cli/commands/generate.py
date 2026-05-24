@@ -41,33 +41,58 @@ def generate(
         help="Directory for generated output files.",
         resolve_path=True,
     ),
+    provider: str = typer.Option(
+        "openai",
+        "--provider",
+        "-p",
+        help="LLM provider: 'openai', 'azure', or 'ollama'.",
+        case_sensitive=False,
+    ),
+    model: Optional[str] = typer.Option(  # noqa: UP007
+        None,
+        "--model",
+        "-m",
+        help="LLM model name (e.g. gpt-4o-mini, llama3). Defaults to gpt-4o-mini for openai.",
+    ),
     api_key: Optional[str] = typer.Option(  # noqa: UP007
         None,
         "--api-key",
-        help="OpenAI or Azure API key (overrides env/config).",
-        envvar="OPENAI_API_KEY",
-    ),
-    tts_backend: Optional[str] = typer.Option(  # noqa: UP007
-        None,
-        "--tts-backend",
-        help="TTS backend: 'edge' (free), 'openai', or 'elevenlabs'.",
-    ),
-    voice: Optional[str] = typer.Option(  # noqa: UP007
-        None,
-        "--voice",
-        help="TTS voice (overrides config). OpenAI: alloy/echo/fable/onyx/nova/shimmer.",
+        help="API key for the LLM provider (openai/azure). Not needed for ollama.",
     ),
     azure_endpoint: Optional[str] = typer.Option(  # noqa: UP007
         None,
         "--azure-endpoint",
-        help="Azure OpenAI endpoint URL (enables Azure mode).",
-        envvar="PODIFYR_AZURE_ENDPOINT",
+        help="Azure OpenAI endpoint URL (required when --provider=azure).",
     ),
     azure_deployment: Optional[str] = typer.Option(  # noqa: UP007
         None,
         "--azure-deployment",
-        help="Azure chat model deployment name.",
-        envvar="PODIFYR_AZURE_CHAT_DEPLOYMENT",
+        help="Azure chat model deployment name (required when --provider=azure).",
+    ),
+    azure_api_version: Optional[str] = typer.Option(  # noqa: UP007
+        None,
+        "--azure-api-version",
+        help="Azure OpenAI API version (default: 2024-12-01-preview).",
+    ),
+    ollama_base_url: Optional[str] = typer.Option(  # noqa: UP007
+        None,
+        "--ollama-base-url",
+        help="Base URL of the Ollama server (default: http://localhost:11434).",
+    ),
+    tts_backend: Optional[str] = typer.Option(  # noqa: UP007
+        None,
+        "--tts-backend",
+        help="TTS backend: 'edge' (free, default), 'openai', or 'elevenlabs'.",
+    ),
+    voice: Optional[str] = typer.Option(  # noqa: UP007
+        None,
+        "--voice",
+        help="TTS voice. OpenAI: alloy/echo/fable/onyx/nova/shimmer.",
+    ),
+    tts_api_key: Optional[str] = typer.Option(  # noqa: UP007
+        None,
+        "--tts-api-key",
+        help="API key for the TTS backend (openai/elevenlabs). Falls back to --api-key.",
     ),
     skip_audio: bool = typer.Option(
         False,
@@ -89,7 +114,7 @@ def generate(
         None,
         "--concurrency",
         "-c",
-        help="Max concurrent TTS API requests (overrides config).",
+        help="Max concurrent TTS API requests.",
         min=1,
         max=20,
     ),
@@ -103,25 +128,69 @@ def generate(
 
     Analyzes the repository's AST, builds a dependency graph, generates a
     conversational script using AI agents, and synthesizes audio narration.
-    """
-    import os
 
-    # Apply CLI overrides to environment before settings load
+    Examples:
+
+      podifyr-ai generate ./my-repo --provider openai --api-key sk-...
+
+      podifyr-ai generate ./my-repo --provider azure \\
+          --azure-endpoint https://x.openai.azure.com --azure-deployment gpt-4o \\
+          --api-key <azure-key>
+
+      podifyr-ai generate ./my-repo --provider ollama --model llama3
+    """
+    from podifyr.config import (
+        CacheConfig,
+        LLMConfig,
+        LoggingConfig,
+        Settings,
+        TTSConfig,
+        set_settings,
+    )
+
+    # Validate provider
+    provider_norm = provider.lower().strip()
+    if provider_norm not in ("openai", "azure", "ollama"):
+        print_error(f"Unknown provider '{provider}'. Must be one of: openai, azure, ollama.")
+        raise typer.Exit(code=2)
+
+    # Build LLM config
+    llm_kwargs: dict[str, object] = {"provider": provider_norm}
+    if model:
+        llm_kwargs["model"] = model
+    elif provider_norm == "ollama":
+        llm_kwargs["model"] = "llama3"
     if api_key:
-        os.environ["OPENAI_API_KEY"] = api_key
+        llm_kwargs["api_key"] = api_key
     if azure_endpoint:
-        os.environ["PODIFYR_AZURE_ENABLED"] = "true"
-        os.environ["PODIFYR_AZURE_ENDPOINT"] = azure_endpoint
+        llm_kwargs["azure_endpoint"] = azure_endpoint
     if azure_deployment:
-        os.environ["PODIFYR_AZURE_CHAT_DEPLOYMENT"] = azure_deployment
-    if api_key and azure_endpoint:
-        os.environ["PODIFYR_AZURE_API_KEY"] = api_key
+        llm_kwargs["azure_deployment"] = azure_deployment
+    if azure_api_version:
+        llm_kwargs["azure_api_version"] = azure_api_version
+    if ollama_base_url:
+        llm_kwargs["ollama_base_url"] = ollama_base_url
+    llm_cfg = LLMConfig(**llm_kwargs)  # type: ignore[arg-type]
+
+    # Build TTS config
+    tts_kwargs: dict[str, object] = {}
     if tts_backend:
-        os.environ["PODIFYR_TTS_BACKEND"] = tts_backend
+        tts_kwargs["backend"] = tts_backend
+    if voice:
+        tts_kwargs["voice"] = voice
+    if tts_api_key:
+        tts_kwargs["api_key"] = tts_api_key
+    if concurrency:
+        tts_kwargs["max_concurrent_requests"] = concurrency
+    tts_cfg = TTSConfig(**tts_kwargs)  # type: ignore[arg-type]
+
+    cache_cfg = CacheConfig(enabled=not no_cache)
+    log_cfg = LoggingConfig(level="DEBUG" if verbose else "INFO")
+
+    set_settings(Settings(llm=llm_cfg, tts=tts_cfg, cache=cache_cfg, logging=log_cfg))
 
     # Configure logging
-    log_level = "DEBUG" if verbose else "INFO"
-    configure_logging(level=log_level)
+    configure_logging(level=log_cfg.level)
 
     print_banner()
     print_target_info(str(repo_path), str(output_dir))
@@ -131,17 +200,13 @@ def generate(
     chunks_dir = output_dir / CHUNKS_SUBDIR
     chunks_dir.mkdir(parents=True, exist_ok=True)
 
-    # Initialize cache (reset settings to pick up CLI overrides)
+    # Initialize cache
     from podifyr.cache import CacheManager
-    from podifyr.config import get_settings
-    from podifyr.config.settings import reset_settings
 
-    reset_settings()
-    settings = get_settings()
     cache = CacheManager(
-        cache_dir=settings.cache.directory,
-        ttl=settings.cache.ttl_seconds,
-        enabled=settings.cache.enabled and not no_cache,
+        cache_dir=cache_cfg.directory,
+        ttl=cache_cfg.ttl_seconds,
+        enabled=cache_cfg.enabled,
     )
 
     try:
@@ -167,7 +232,7 @@ def _run_pipeline(
     repo_path: Path,
     output_dir: Path,
     chunks_dir: Path,
-    cache: CacheManager,
+    cache: CacheManager,  # type: ignore[name-defined]  # noqa: F821
     voice: str | None,
     skip_audio: bool,
     concurrency: int | None,
@@ -287,7 +352,7 @@ def _save_script(path: Path, module_names: list[str], chunks: list[str]) -> None
     try:
         with path.open("w", encoding="utf-8") as f:
             f.write("# 🎙️ Architecture Walkthrough Script\n\n")
-            f.write("*Generated by podifyr*\n\n---\n\n")
+            f.write("*Generated by podifyr-ai*\n\n---\n\n")
 
             for i, (name, chunk) in enumerate(zip(module_names, chunks, strict=False), 1):
                 f.write(f"## {i}. `{name}`\n\n")

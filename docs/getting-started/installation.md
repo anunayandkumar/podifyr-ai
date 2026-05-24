@@ -4,7 +4,10 @@
 
 - Python 3.10 or later
 - FFmpeg (for audio stitching)
-- An LLM API key (OpenAI or Azure OpenAI) for script generation
+- One of:
+  - An OpenAI API key, or
+  - An Azure OpenAI deployment + API key, or
+  - A local Ollama server (no key required)
 - TTS: Edge TTS (default) is free and requires no API key
 
 ## Install from PyPI
@@ -13,7 +16,7 @@
 pip install podifyr-ai
 ```
 
-This includes the free Edge TTS backend out of the box.
+This includes the free Edge TTS backend and the OpenAI/Azure/Ollama LLM bindings out of the box.
 
 ## Install with optional backends
 
@@ -54,6 +57,15 @@ winget install ffmpeg
 
 Or download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH.
 
+## Install Ollama (optional — local LLM)
+
+If you want to use the `ollama` provider, install Ollama from [ollama.com](https://ollama.com), then pull a model:
+
+```bash
+ollama serve            # starts the local server
+ollama pull llama3      # download a model
+```
+
 ## Verify Installation
 
 ```bash
@@ -64,12 +76,16 @@ podifyr-ai generate --help
 ## Minimal Usage (after install)
 
 ```bash
-# Generate walkthrough with free Edge TTS
-podifyr-ai generate ./your-python-project --api-key sk-your-openai-key
+# OpenAI with the free Edge TTS backend
+podifyr-ai generate ./your-python-project --provider openai --api-key sk-...
 
-# Or with Azure OpenAI
+# Azure OpenAI
 podifyr-ai generate ./your-python-project \
-  --api-key your-azure-key \
+  --provider azure \
+  --api-key <azure-key> \
   --azure-endpoint https://your-resource.openai.azure.com \
   --azure-deployment gpt-4o-mini
+
+# Ollama (no API key)
+podifyr-ai generate ./your-python-project --provider ollama --model llama3
 ```

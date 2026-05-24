@@ -2,7 +2,7 @@
 
 ## System Design
 
-Podifyr follows a pipeline architecture with clearly separated stages:
+Podifyr-AI follows a pipeline architecture with clearly separated stages:
 
 ```
 ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
@@ -24,8 +24,8 @@ src/podifyr/
 │   ├── protocols.py    # Interface definitions (Protocols)
 │   └── types.py        # Shared TypedDict definitions
 │
-├── config/         # Configuration management
-│   └── settings.py     # Pydantic settings with layered resolution
+├── config/         # Runtime settings (plain Pydantic models, CLI-driven)
+│   └── settings.py     # Settings, LLMConfig, TTSConfig, CacheConfig
 │
 ├── logging/        # Observability
 │   └── setup.py        # Structured logging with structlog
@@ -49,6 +49,9 @@ src/podifyr/
 │   ├── builder.py      # Graph construction
 │   └── analyzer.py     # Topological sort + metrics
 │
+├── llm/            # Unified LLM provider factory
+│   └── __init__.py     # build_chat_model() for openai/azure/ollama
+│
 ├── agents/         # Stage 3: Script Generation
 │   ├── state.py        # LangGraph state definition
 │   ├── prompts/        # LLM prompt templates
@@ -71,7 +74,6 @@ src/podifyr/
     ├── display.py      # Rich display utilities
     └── commands/       # Sub-commands
         ├── generate.py     # Main generate workflow
-        ├── config_cmd.py   # Config management
         └── cache_cmd.py    # Cache management
 ```
 
@@ -79,10 +81,12 @@ src/podifyr/
 
 1. **Graceful Degradation**: Each stage handles failures independently. A single unparseable file doesn't crash the pipeline.
 
-2. **Plugin Architecture**: TTS backends implement a Protocol, allowing new providers without modifying core code.
+2. **Unified LLM Interface**: A single `build_chat_model()` factory in `podifyr.llm` returns a LangChain `BaseChatModel` for any of the three supported providers (OpenAI, Azure OpenAI, Ollama). Agent nodes don't know which provider is active.
 
-3. **Content-Hash Caching**: Expensive operations (parsing, LLM calls) are cached with content-based invalidation.
+3. **Plugin Architecture**: TTS backends implement a Protocol, allowing new providers without modifying core code.
 
-4. **Structured Observability**: All logging uses structlog with key-value pairs for machine-parseable output.
+4. **Content-Hash Caching**: Expensive operations (parsing, LLM calls) are cached with content-based invalidation.
 
-5. **Layered Configuration**: Settings resolve from env vars, .env files, and CLI flags with clear precedence.
+5. **Structured Observability**: All logging uses structlog with key-value pairs for machine-parseable output.
+
+6. **CLI-only Configuration**: All runtime configuration comes from CLI flags. There is no `.env` file, no environment-variable lookup, and no global config layer to debug.

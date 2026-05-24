@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
 
 from podifyr.agents.prompts import SCRIPTWRITER_SYSTEM_PROMPT
-from podifyr.agents.state import ScriptState
-from podifyr.config import get_settings
+from podifyr.agents.state import ScriptState  # noqa: TCH001
+from podifyr.llm import build_chat_model
 from podifyr.logging import get_logger
 
 
@@ -22,7 +21,6 @@ def scriptwriter_node(state: ScriptState) -> dict[str, str]:
 
     Falls back to the raw technical summary if the LLM call fails.
     """
-    settings = get_settings()
     module_name = state["module_name"]
     technical_summary = state["technical_summary"]
 
@@ -34,22 +32,7 @@ def scriptwriter_node(state: ScriptState) -> dict[str, str]:
         }
 
     try:
-        if settings.is_azure:
-            llm = AzureChatOpenAI(
-                azure_endpoint=settings.azure.endpoint,
-                azure_deployment=settings.azure.chat_deployment,
-                openai_api_version=settings.azure.api_version,
-                openai_api_key=settings.azure.api_key or None,
-                temperature=0.7,
-                max_tokens=settings.llm.max_tokens,
-            )
-        else:
-            llm = ChatOpenAI(
-                model=settings.llm.model,
-                temperature=0.7,  # Higher temperature for creative writing
-                max_tokens=settings.llm.max_tokens,
-                api_key=settings.effective_openai_key or None,
-            )
+        llm = build_chat_model(temperature=0.7)
 
         messages = [
             SystemMessage(content=SCRIPTWRITER_SYSTEM_PROMPT),

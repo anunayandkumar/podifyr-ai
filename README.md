@@ -33,55 +33,63 @@ Repository → AST Parsing → Dependency Graph → AI Script → TTS Audio → 
 pip install podifyr-ai
 ```
 
-### Generate a Walkthrough (Free — No API key for TTS)
+Podifyr-AI is now more user friendly. Pick a provider (`openai`, `azure`, or `ollama`) and pass the relevant flags.
 
-```bash
-# Set your OpenAI API key (needed for script generation)
-export OPENAI_API_KEY="sk-..."
-
-# Generate a walkthrough — uses free Edge TTS by default
-podifyr-ai generate ./path/to/your/repo
-```
-
-### Or pass everything via CLI (no env setup needed)
+### OpenAI
 
 ```bash
 podifyr-ai generate ./my-project \
-  --api-key sk-your-key-here \
-  --tts-backend edge \
-  --output ./walkthrough
+  --provider openai \
+  --api-key sk-your-key-here
 ```
 
 ### Azure OpenAI
 
 ```bash
 podifyr-ai generate ./my-project \
-  --api-key your-azure-key \
+  --provider azure \
+  --api-key <your-azure-key> \
   --azure-endpoint https://your-resource.openai.azure.com \
-  --azure-deployment gpt-4o-mini \
-  --tts-backend edge
+  --azure-deployment gpt-4o-mini
 ```
+
+### Ollama (local, no API key)
+
+Make sure Ollama is running locally (`ollama serve`) and the model is pulled (`ollama pull llama3`):
+
+```bash
+podifyr-ai generate ./my-project \
+  --provider ollama \
+  --model llama3
+```
+
+By default audio is synthesized with the free **Edge TTS** backend — no API key required.
 
 ## CLI Reference
 
 ```
 podifyr-ai generate <REPO_PATH>     Generate a podcast walkthrough
 
-Options:
-  --output, -o PATH              Output directory [default: ./podifyr_output]
-  --api-key TEXT                  OpenAI/Azure API key (or set OPENAI_API_KEY)
-  --tts-backend TEXT              TTS: 'edge' (free), 'openai', 'elevenlabs'
-  --voice TEXT                    Voice: alloy, echo, fable, onyx, nova, shimmer
-  --azure-endpoint TEXT           Azure OpenAI endpoint (enables Azure mode)
+Provider options:
+  --provider, -p TEXT             LLM provider: openai (default), azure, ollama
+  --model, -m TEXT                LLM model name (e.g. gpt-4o-mini, llama3)
+  --api-key TEXT                  API key for the LLM provider (openai/azure)
+  --azure-endpoint TEXT           Azure OpenAI endpoint URL
   --azure-deployment TEXT         Azure chat model deployment name
+  --azure-api-version TEXT        Azure OpenAI API version
+  --ollama-base-url TEXT          Ollama server URL [default: http://localhost:11434]
+
+Output and audio options:
+  --output, -o PATH               Output directory [default: ./podifyr_output]
+  --tts-backend TEXT              TTS: 'edge' (free, default), 'openai', 'elevenlabs'
+  --voice TEXT                    Voice (e.g. alloy, echo, fable, onyx, nova, shimmer)
+  --tts-api-key TEXT              API key for the TTS backend (falls back to --api-key)
   --skip-audio                    Generate script only, skip audio
   --no-cache                      Disable caching for this run
   --concurrency, -c INT           Max concurrent TTS requests [1-20]
   --graph-details                 Show dependency graph metrics
   --verbose, -V                   Enable debug logging
 
-podifyr-ai config init              Create .env configuration file
-podifyr-ai config show              Display current resolved settings
 podifyr-ai cache clear              Clear cached data
 podifyr-ai cache stats              Show cache statistics
 podifyr-ai --version                Show version
@@ -92,43 +100,21 @@ podifyr-ai --version                Show version
 | Backend | Cost | API Key Required | Quality | Setup |
 |---------|------|-----------------|---------|-------|
 | **Edge** (default) | Free | No | Good (Microsoft Neural) | None |
-| **OpenAI** | ~$0.015/1K chars | Yes (`OPENAI_API_KEY`) | Good | API key |
-| **ElevenLabs** | Varies | Yes (`ELEVENLABS_API_KEY`) | Excellent | `pip install podifyr-ai[elevenlabs]` |
+| **OpenAI** | ~$0.015/1K chars | Yes (`--tts-api-key` or `--api-key`) | Good | API key |
+| **ElevenLabs** | Varies | Yes (`--tts-api-key`) | Excellent | `pip install podifyr-ai[elevenlabs]` |
 
 ## Configuration
 
-Settings are resolved in priority order: **CLI flags > Environment variables > `.env` file > Defaults**
-
-```bash
-# Generate a template .env file
-podifyr-ai config init
-
-# View resolved configuration
-podifyr-ai config show
-```
-
-### Key Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OPENAI_API_KEY` | — | OpenAI API key (for LLM script generation) |
-| `PODIFYR_TTS_BACKEND` | `edge` | TTS backend: `edge`, `openai`, `elevenlabs` |
-| `PODIFYR_TTS_VOICE` | `alloy` | Voice identifier |
-| `PODIFYR_AZURE_ENABLED` | `false` | Use Azure OpenAI for LLM |
-| `PODIFYR_AZURE_ENDPOINT` | — | Azure OpenAI resource URL |
-| `PODIFYR_AZURE_API_KEY` | — | Azure API key |
-| `PODIFYR_AZURE_CHAT_DEPLOYMENT` | — | Azure model deployment name |
-
-See [docs/getting-started/configuration.md](docs/getting-started/configuration.md) for the full reference.
+Podifyr-AI is purely CLI-driven — there is **no `.env` file, no `PODIFYR_*` env vars, no `config` sub-command**. Every run is fully described by the flags you pass to `podifyr-ai generate`.
 
 ## Features
 
 - 🧠 **AST-based analysis** — Extracts architecture without executing code
 - 🔗 **Dependency graphing** — Cycle-aware topological sorting with NetworkX
 - 🤖 **Multi-agent pipeline** — LangGraph orchestration with analyzer + scriptwriter nodes
+- 🤝 **Unified LLM interface** — One CLI, three providers: OpenAI, Azure OpenAI, Ollama
 - 🔊 **Free TTS included** — Edge TTS (Microsoft Neural voices) works out of the box
 - 🔌 **Plugin backends** — Swappable TTS providers (Edge, OpenAI, ElevenLabs)
-- ☁️ **Azure OpenAI** — Full support for Azure OpenAI deployments
 - 💾 **Smart caching** — Content-hash invalidation avoids redundant API calls
 - 📊 **Rich CLI** — Beautiful progress bars, graph metrics, and colored output
 - 🐳 **Docker support** — Reproducible builds with multi-stage Dockerfile
@@ -139,12 +125,13 @@ See [docs/getting-started/configuration.md](docs/getting-started/configuration.m
 ```
 src/podifyr/
 ├── core/          # Exceptions, constants, protocols, types
-├── config/        # Pydantic settings with layered resolution
+├── config/        # Plain pydantic models for runtime settings (CLI-driven)
 ├── logging/       # Structured logging with structlog
 ├── utils/         # Filesystem helpers, retry logic, async patterns
 ├── cache/         # Disk-based caching with content-hash invalidation
 ├── parsing/       # AST visitor, models, filtering engine
 ├── graph/         # NetworkX graph builder and analyzer
+├── llm/           # Unified provider factory (OpenAI, Azure, Ollama)
 ├── agents/        # LangGraph nodes, prompts, orchestrator
 ├── audio/         # TTS backends (Edge, OpenAI, ElevenLabs, Azure), stitcher
 └── cli/           # Typer commands with rich display
@@ -154,7 +141,7 @@ src/podifyr/
 
 - Python 3.10+
 - FFmpeg (for audio stitching)
-- An LLM API key (OpenAI or Azure OpenAI) for script generation
+- One of: an OpenAI API key, an Azure OpenAI deployment, or a local Ollama server
 - TTS: Edge TTS works free with no key; OpenAI/ElevenLabs require API keys
 
 ### Install FFmpeg

@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
-from podifyr.audio.backends import BaseTTSBackend
+from podifyr.audio.backends import BaseTTSBackend  # noqa: TCH001
 from podifyr.audio.backends.openai_tts import OpenAITTSBackend
 from podifyr.config import get_settings
 from podifyr.core.constants import AUDIO_CHUNK_PREFIX, AUDIO_FILE_EXTENSION
@@ -21,58 +21,59 @@ def _create_backend() -> BaseTTSBackend:
     """Factory: create the appropriate TTS backend based on configuration."""
     settings = get_settings()
     backend_name = settings.tts.backend
+    llm = settings.llm
+    tts = settings.tts
 
-    # Azure OpenAI TTS takes priority when Azure is enabled
-    if settings.is_azure and backend_name == "openai":
+    # Azure OpenAI TTS takes priority when the LLM provider is Azure.
+    if llm.provider == "azure" and backend_name == "openai":
         from podifyr.audio.backends.azure_tts import AzureTTSBackend
 
-        if not settings.azure.api_key:
+        if not llm.api_key:
             raise ConfigurationError(
-                field="PODIFYR_AZURE_API_KEY",
-                detail="Azure OpenAI API key is required for TTS. Set PODIFYR_AZURE_API_KEY.",
+                field="--api-key",
+                detail="Azure API key is required for Azure TTS. Pass --api-key.",
             )
         return AzureTTSBackend(
-            endpoint=settings.azure.endpoint,
-            api_key=settings.azure.api_key,
-            deployment=settings.azure.tts_deployment,
-            api_version=settings.azure.api_version,
-            timeout=settings.tts.timeout_seconds,
+            endpoint=llm.azure_endpoint,
+            api_key=llm.api_key,
+            deployment=tts.azure_deployment,
+            api_version=llm.azure_api_version,
+            timeout=tts.timeout_seconds,
         )
 
     if backend_name == "openai":
-        api_key = settings.effective_openai_key
+        # Reuse the LLM key if the TTS-specific one was not supplied.
+        api_key = tts.api_key or llm.api_key
         if not api_key:
             raise ConfigurationError(
-                field="OPENAI_API_KEY",
-                detail="OpenAI API key is required for TTS. Set OPENAI_API_KEY environment variable.",
+                field="--tts-api-key",
+                detail="OpenAI API key is required for TTS. Pass --api-key or --tts-api-key.",
             )
         return OpenAITTSBackend(
             api_key=api_key,
-            model=settings.tts.model,
-            timeout=settings.tts.timeout_seconds,
+            model=tts.model,
+            timeout=tts.timeout_seconds,
         )
 
-    elif backend_name == "edge":
+    if backend_name == "edge":
         from podifyr.audio.backends.edge_tts import EdgeTTSBackend
 
         return EdgeTTSBackend()
 
-    elif backend_name == "elevenlabs":
-        api_key = settings.elevenlabs_api_key
-        if not api_key:
+    if backend_name == "elevenlabs":
+        if not tts.api_key:
             raise ConfigurationError(
-                field="ELEVENLABS_API_KEY",
-                detail="ElevenLabs API key is required. Set ELEVENLABS_API_KEY environment variable.",
+                field="--tts-api-key",
+                detail="ElevenLabs API key is required. Pass --tts-api-key.",
             )
         from podifyr.audio.backends.elevenlabs import ElevenLabsTTSBackend
 
-        return ElevenLabsTTSBackend(api_key=api_key)
+        return ElevenLabsTTSBackend(api_key=tts.api_key)
 
-    else:
-        raise ConfigurationError(
-            field="PODIFYR_TTS_BACKEND",
-            detail=f"Unknown TTS backend: '{backend_name}'. Supported: openai, edge, elevenlabs.",
-        )
+    raise ConfigurationError(
+        field="--tts-backend",
+        detail=f"Unknown TTS backend: '{backend_name}'. Supported: edge, openai, elevenlabs.",
+    )
 
 
 async def _generate_chunk(

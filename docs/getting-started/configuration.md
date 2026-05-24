@@ -1,123 +1,83 @@
 # Configuration
 
-Podifyr uses a layered configuration system. Settings are resolved in this priority order:
+Podifyr-AI is **100% CLI-driven**. There are no `.env` files, no `PODIFYR_*` environment variables, and no config sub-command. Every run is fully described by the flags passed to `podifyr-ai generate`.
 
-1. CLI flags (highest priority)
-2. Environment variables
-3. `.env` file
-4. Built-in defaults (lowest priority)
+## Picking an LLM Provider
 
-## Initialize Configuration
+The `--provider` (or `-p`) flag selects the LLM backend. Three providers are supported:
 
-```bash
-podifyr-ai config init
-```
+| Provider | Flag | Notes |
+|----------|------|-------|
+| OpenAI    | `--provider openai` (default) | Needs `--api-key` |
+| Azure OpenAI | `--provider azure` | Needs `--api-key`, `--azure-endpoint`, `--azure-deployment` |
+| Ollama (local) | `--provider ollama` | No API key, expects a running local server |
 
-This creates a `.env` file with all available settings and documentation.
-
-## CLI Flags (Highest Priority)
-
-All key settings can be passed directly on the command line:
+### OpenAI
 
 ```bash
 podifyr-ai generate ./my-repo \
-  --api-key sk-your-key \
-  --tts-backend edge \
-  --voice nova \
-  --azure-endpoint https://your-resource.openai.azure.com \
-  --azure-deployment gpt-4o-mini \
-  --output ./output \
-  --concurrency 5
+  --provider openai \
+  --api-key sk-... \
+  --model gpt-4o-mini
 ```
 
-## Providers
-
-### LLM (Script Generation)
-
-- **OpenAI** (default) — uses the public OpenAI API
-- **Azure OpenAI** — uses your Azure OpenAI resource deployments
-
-### TTS (Audio Synthesis)
-
-| Backend | Key | Cost | Quality |
-|---------|-----|------|---------|
-| `edge` (default) | None needed | **Free** | Good (Microsoft Neural) |
-| `openai` | `OPENAI_API_KEY` | ~$0.015/1K chars | Good |
-| `elevenlabs` | `ELEVENLABS_API_KEY` | Varies | Excellent |
-
-## Environment Variables
-
-### Required (Public OpenAI)
-
-| Variable | Description |
-|----------|-------------|
-| `OPENAI_API_KEY` | OpenAI API key for LLM script generation |
-
-### Azure OpenAI Settings
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PODIFYR_AZURE_ENABLED` | `false` | Enable Azure OpenAI provider |
-| `PODIFYR_AZURE_ENDPOINT` | | Azure resource endpoint URL |
-| `PODIFYR_AZURE_API_KEY` | | Azure OpenAI API key |
-| `PODIFYR_AZURE_API_VERSION` | `2024-12-01-preview` | Azure API version |
-| `PODIFYR_AZURE_CHAT_DEPLOYMENT` | | Deployment name for chat model |
-
-### LLM Settings
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PODIFYR_LLM_MODEL` | `gpt-4o-mini` | LLM model to use |
-| `PODIFYR_LLM_TEMPERATURE` | `0.3` | Sampling temperature |
-| `PODIFYR_LLM_MAX_TOKENS` | `2048` | Max response tokens |
-
-### TTS Settings
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PODIFYR_TTS_BACKEND` | `edge` | Backend: `edge`, `openai`, or `elevenlabs` |
-| `PODIFYR_TTS_VOICE` | `alloy` | Voice identifier |
-| `PODIFYR_TTS_MODEL` | `tts-1` | TTS model (OpenAI backend only) |
-| `PODIFYR_MAX_CONCURRENT_REQUESTS` | `5` | Parallel TTS requests |
-
-### Cache Settings
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PODIFYR_CACHE_ENABLED` | `true` | Enable/disable caching |
-| `PODIFYR_CACHE_TTL_SECONDS` | `86400` | Cache expiry (24h) |
-
-### Logging Settings
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PODIFYR_LOG_LEVEL` | `INFO` | Log level |
-| `PODIFYR_LOG_FORMAT` | `console` | Output format: `console` or `json` |
-
-## Azure OpenAI Quick Start
-
-### Option 1: CLI flags (simplest)
+### Azure OpenAI
 
 ```bash
-podifyr-ai generate ./src \
-  --api-key your-azure-key \
+podifyr-ai generate ./my-repo \
+  --provider azure \
+  --api-key <azure-key> \
   --azure-endpoint https://your-resource.openai.azure.com \
   --azure-deployment gpt-4o-mini \
-  --tts-backend edge
+  --azure-api-version 2024-12-01-preview
 ```
 
-### Option 2: .env file
+### Ollama
 
-```dotenv
-PODIFYR_AZURE_ENABLED=true
-PODIFYR_AZURE_ENDPOINT=https://your-resource.openai.azure.com
-PODIFYR_AZURE_API_KEY=your-azure-key
-PODIFYR_AZURE_CHAT_DEPLOYMENT=gpt-4o-mini
-PODIFYR_TTS_BACKEND=edge
-```
-
-Then run:
+Run Ollama locally and pull a model first:
 
 ```bash
-podifyr-ai generate ./src
+ollama serve
+ollama pull llama3
+```
+
+Then:
+
+```bash
+podifyr-ai generate ./my-repo \
+  --provider ollama \
+  --model llama3 \
+  --ollama-base-url http://localhost:11434
+```
+
+## TTS Configuration
+
+The TTS backend is independent of the LLM provider.
+
+| Flag | Choices | Default |
+|------|---------|---------|
+| `--tts-backend` | `edge`, `openai`, `elevenlabs` | `edge` |
+| `--voice` | Backend-specific voice identifier | `alloy` |
+| `--tts-api-key` | API key for `openai` / `elevenlabs` backends | Falls back to `--api-key` |
+| `--concurrency` / `-c` | Max parallel TTS requests (1–20) | `5` |
+
+When `--provider azure` is combined with `--tts-backend openai`, the Azure TTS deployment is used automatically (it reuses the Azure endpoint and API key).
+
+## Other Flags
+
+| Flag | Description |
+|------|-------------|
+| `--output` / `-o` | Output directory (default: `./podifyr_output`) |
+| `--skip-audio` | Generate the script only — no audio |
+| `--no-cache` | Disable disk caching for this run |
+| `--graph-details` | Print detailed dependency-graph metrics |
+| `--verbose` / `-V` | Verbose debug logging |
+
+## Cache
+
+The disk cache lives in the OS-standard cache directory. Manage it with the `cache` sub-command:
+
+```bash
+podifyr-ai cache stats
+podifyr-ai cache clear
 ```
