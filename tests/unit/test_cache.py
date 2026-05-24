@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
-import pytest
+from typing import TYPE_CHECKING
 
 from podifyr.cache import CacheManager
+
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestCacheManager:

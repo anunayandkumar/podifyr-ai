@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-import asyncio
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from typing import TYPE_CHECKING
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from podifyr.audio.backends.openai_tts import OpenAITTSBackend
 from podifyr.audio.stitcher import _write_concat_list, stitch_audio, verify_ffmpeg_available
+
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestOpenAITTSBackend:
@@ -67,9 +70,7 @@ class TestStitchAudio:
         assert output.read_bytes() == b"fake mp3 data"
 
     @patch("podifyr.audio.stitcher.subprocess.run")
-    def test_stitch_multiple_chunks_calls_ffmpeg(
-        self, mock_run: MagicMock, tmp_dir: Path
-    ) -> None:
+    def test_stitch_multiple_chunks_calls_ffmpeg(self, mock_run: MagicMock, tmp_dir: Path) -> None:
         """Should call FFmpeg for multiple chunks."""
         # Create fake chunks
         for i in range(3):

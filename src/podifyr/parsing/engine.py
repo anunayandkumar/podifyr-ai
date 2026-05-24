@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 import ast
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-from podifyr.cache import CacheManager
 from podifyr.logging import get_logger
 from podifyr.parsing.models import ModuleMetadata
 from podifyr.parsing.visitors import ModuleVisitor
 from podifyr.utils.fs import collect_python_files, normalize_module_path
+
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from podifyr.cache import CacheManager
 
 
 logger = get_logger(__name__)

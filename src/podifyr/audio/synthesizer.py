@@ -6,7 +6,6 @@ import asyncio
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from podifyr.audio.backends import BaseTTSBackend  # noqa: TC001
 from podifyr.audio.backends.openai_tts import OpenAITTSBackend
 from podifyr.config import get_settings
 from podifyr.core.constants import AUDIO_CHUNK_PREFIX, AUDIO_FILE_EXTENSION
@@ -17,6 +16,7 @@ from podifyr.logging import get_logger
 
 if TYPE_CHECKING:
     from podifyr.agents.state import DialogueTurn
+    from podifyr.audio.backends import BaseTTSBackend
 
 
 logger = get_logger(__name__)

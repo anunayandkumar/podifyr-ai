@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 import typer
 
 from podifyr import __version__
@@ -43,7 +41,7 @@ def _version_callback(value: bool) -> None:
 
 @app.callback()
 def main_callback(
-    version: Optional[bool] = typer.Option(  # noqa: UP007, ARG001
+    version: bool | None = typer.Option(
         None,
         "--version",
         "-v",

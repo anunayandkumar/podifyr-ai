@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
-from pathlib import Path  # noqa: TCH003
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 from typer.testing import CliRunner
 
 from podifyr.cli import app
+
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 runner = CliRunner()

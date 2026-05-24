@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import (
@@ -17,7 +19,10 @@ from rich.table import Table
 from rich.theme import Theme
 
 from podifyr import __version__
-from podifyr.graph.models import GraphMetrics
+
+
+if TYPE_CHECKING:
+    from podifyr.graph.models import GraphMetrics
 
 
 # Custom theme for consistent branding

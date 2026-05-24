@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Awaitable, Callable, Sequence
-from typing import TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
 from podifyr.logging import get_logger
+
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable, Sequence
 
 
 logger = get_logger(__name__)

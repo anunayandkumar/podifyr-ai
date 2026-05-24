@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import contextlib
+
 import networkx as nx
 
 from podifyr.core.types import ModuleGraphContext
@@ -103,7 +105,7 @@ def _compute_depth(graph: nx.DiGraph, node: str) -> int:
             try:
                 path_length = nx.shortest_path_length(graph, root, node)
                 max_depth = max(max_depth, path_length)
-            except nx.NetworkXNoPath:
+            except nx.NetworkXNoPath:  # noqa: PERF203  # path-not-found is the common case
                 continue
 
         return max_depth
@@ -144,10 +146,8 @@ def compute_graph_metrics(graph: nx.DiGraph) -> GraphMetrics:
     # Longest path (only for DAGs)
     longest_path_length = 0
     if not has_cycles:
-        try:
+        with contextlib.suppress(Exception):
             longest_path_length = nx.dag_longest_path_length(graph)
-        except Exception:
-            pass
 
     return GraphMetrics(
         node_count=node_count,

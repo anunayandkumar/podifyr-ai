@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from collections.abc import Awaitable, Callable
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from podifyr.core.constants import DEFAULT_MAX_RETRIES, DEFAULT_RETRY_BASE_DELAY
 from podifyr.logging import get_logger
+
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
 
 
 logger = get_logger(__name__)
@@ -42,7 +45,7 @@ def async_retry_with_backoff(
             for attempt in range(max_retries + 1):
                 try:
                     return await func(*args, **kwargs)
-                except retryable_exceptions as exc:
+                except retryable_exceptions as exc:  # noqa: PERF203  # retry loop requires try/except
                     last_exception = exc
                     if attempt == max_retries:
                         break
@@ -88,7 +91,7 @@ def sync_retry_with_backoff(
             for attempt in range(max_retries + 1):
                 try:
                     return func(*args, **kwargs)
-                except retryable_exceptions as exc:
+                except retryable_exceptions as exc:  # noqa: PERF203  # retry loop requires try/except
                     last_exception = exc
                     if attempt == max_retries:
                         break

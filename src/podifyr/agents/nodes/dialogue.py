@@ -9,14 +9,17 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from podifyr.agents.prompts import DIALOGUE_SYSTEM_PROMPT
-from podifyr.agents.state import DialogueTurn, ScriptState  # noqa: TC001
 from podifyr.llm import build_chat_model
 from podifyr.logging import get_logger
+
+
+if TYPE_CHECKING:
+    from podifyr.agents.state import DialogueTurn, ScriptState
 
 
 logger = get_logger(__name__)

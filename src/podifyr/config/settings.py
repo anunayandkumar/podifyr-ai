@@ -6,7 +6,7 @@ No environment variables, no .env files. All values come from CLI flags
 
 from __future__ import annotations
 
-from pathlib import Path  # noqa: TC003
+from pathlib import Path  # noqa: TC003  # pydantic needs runtime type for validation
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator

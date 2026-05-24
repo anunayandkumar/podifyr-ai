@@ -20,9 +20,7 @@ def should_skip_directory(dir_name: str) -> bool:
         return True
     if dir_name.startswith("."):
         return True
-    if dir_name.endswith(".egg-info"):
-        return True
-    return False
+    return dir_name.endswith(".egg-info")
 
 
 def collect_python_files(target_dir: Path) -> list[Path]:
@@ -60,7 +58,7 @@ def collect_python_files(target_dir: Path) -> list[Path]:
     return python_files
 
 
-def normalize_module_path(file_path: str, strip_src: bool = True) -> str:
+def normalize_module_path(file_path: str, strip_src: bool = True) -> str:  # noqa: FBT001, FBT002
     """Convert a file path to a dotted module name suitable for graph labeling.
 
     Args:

@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from podifyr.core.constants import IGNORED_FILE_PATTERNS
 from podifyr.logging import get_logger
+
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 logger = get_logger(__name__)
@@ -35,10 +39,7 @@ def should_include_file(file_path: Path) -> bool:
 
     # Exclude migration files
     parts = file_path.parts
-    if "migrations" in parts or "alembic" in parts:
-        return False
-
-    return True
+    return not ("migrations" in parts or "alembic" in parts)
 
 
 def estimate_file_importance(file_path: Path, line_count: int) -> float:

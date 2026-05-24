@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-import tempfile
-from pathlib import Path
-
-import pytest
+from typing import TYPE_CHECKING
 
 from podifyr.parsing import parse_directory, parse_file
-from podifyr.parsing.models import ClassMetadata, FunctionMetadata, ModuleMetadata
-from podifyr.parsing.visitors import ModuleVisitor
+from podifyr.parsing.models import ModuleMetadata
+
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestParseFile:
@@ -186,7 +186,7 @@ class TestModuleVisitor:
         """Should extract decorator information."""
         file_path = tmp_dir / "decorated.py"
         file_path.write_text(
-            '''\
+            """\
 from functools import lru_cache
 from dataclasses import dataclass
 
@@ -198,7 +198,7 @@ class Config:
 @lru_cache(maxsize=128)
 def cached_func(x: int) -> int:
     return x * 2
-''',
+""",
             encoding="utf-8",
         )
 

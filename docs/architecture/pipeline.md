@@ -10,7 +10,7 @@ flowchart LR
     B --> C[AST Parsing]
     C --> D[Visitor Pattern]
     D --> E[ModuleMetadata]
-    
+
     C -.->|SyntaxError| F[Log & Skip]
 ```
 
@@ -45,7 +45,7 @@ flowchart LR
     B --> C[Technical Summary]
     C --> D[Scriptwriter Node]
     D --> E[Podcast Segment]
-    
+
     B -.->|LLM Failure| F[Fallback Summary]
     D -.->|LLM Failure| G[Use Tech Summary]
 ```
@@ -65,7 +65,7 @@ flowchart LR
     C --> D[.mp3 Chunks]
     D --> E[FFmpeg Concat]
     E --> F[walkthrough.mp3]
-    
+
     C -.->|Rate Limit| G[Exponential Backoff]
     C -.->|Failure| H[Log & Skip Chunk]
 ```

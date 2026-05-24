@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import networkx as nx
-import pytest
 
 from podifyr.graph import build_dependency_graph, get_topological_sort
 from podifyr.graph.analyzer import compute_graph_metrics, get_module_context

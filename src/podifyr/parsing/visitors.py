@@ -21,7 +21,7 @@ class ModuleVisitor(ast.NodeVisitor):
         self.global_constants: list[str] = []
         self.has_main_guard: bool = False
 
-    def visit_Import(self, node: ast.Import) -> None:  # noqa: N802
+    def visit_Import(self, node: ast.Import) -> None:
         """Extract standard import statements."""
         for alias in node.names:
             self.imports.append(
@@ -32,7 +32,7 @@ class ModuleVisitor(ast.NodeVisitor):
                 )
             )
 
-    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:  # noqa: N802
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         """Extract from-import statements."""
         module_name = node.module or ""
         level = node.level or 0
@@ -48,7 +48,7 @@ class ModuleVisitor(ast.NodeVisitor):
                 )
             )
 
-    def visit_ClassDef(self, node: ast.ClassDef) -> None:  # noqa: N802
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
         """Extract class definitions with methods."""
         methods = self._extract_methods(node)
         base_classes = self._extract_bases(node)
@@ -70,26 +70,26 @@ class ModuleVisitor(ast.NodeVisitor):
             )
         )
 
-    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:  # noqa: N802
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         """Extract top-level function definitions."""
         self.functions.append(self._build_function_metadata(node, is_async=False))
 
-    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:  # noqa: N802
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
         """Extract top-level async function definitions."""
         self.functions.append(self._build_function_metadata(node, is_async=True))
 
-    def visit_Assign(self, node: ast.Assign) -> None:  # noqa: N802
+    def visit_Assign(self, node: ast.Assign) -> None:
         """Detect module-level constant assignments (UPPER_CASE names)."""
         for target in node.targets:
             if isinstance(target, ast.Name) and target.id.isupper():
                 self.global_constants.append(target.id)
 
-    def visit_AnnAssign(self, node: ast.AnnAssign) -> None:  # noqa: N802
+    def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
         """Detect module-level annotated constant assignments (UPPER_CASE names)."""
         if isinstance(node.target, ast.Name) and node.target.id.isupper():
             self.global_constants.append(node.target.id)
 
-    def visit_If(self, node: ast.If) -> None:  # noqa: N802
+    def visit_If(self, node: ast.If) -> None:
         """Detect if __name__ == '__main__' guard."""
         if self._is_main_guard(node):
             self.has_main_guard = True
@@ -141,28 +141,24 @@ class ModuleVisitor(ast.NodeVisitor):
         return result
 
     @staticmethod
+    def _safe_unparse(node: ast.AST) -> str:
+        """Unparse an AST node, returning a sentinel string on failure."""
+        try:
+            return ast.unparse(node)
+        except Exception:
+            return "<unknown>"
+
+    @staticmethod
     def _extract_bases(node: ast.ClassDef) -> list[str]:
         """Extract base class names."""
-        bases: list[str] = []
-        for base in node.bases:
-            try:
-                bases.append(ast.unparse(base))
-            except Exception:
-                bases.append("<unknown>")
-        return bases
+        return [ModuleVisitor._safe_unparse(base) for base in node.bases]
 
     @staticmethod
     def _extract_decorators(
         node: ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef,
     ) -> list[str]:
         """Extract decorator names."""
-        decorators: list[str] = []
-        for dec in node.decorator_list:
-            try:
-                decorators.append(ast.unparse(dec))
-            except Exception:
-                decorators.append("<unknown>")
-        return decorators
+        return [ModuleVisitor._safe_unparse(dec) for dec in node.decorator_list]
 
     @staticmethod
     def _extract_methods(node: ast.ClassDef) -> list[FunctionMetadata]:
@@ -206,10 +202,9 @@ class ModuleVisitor(ast.NodeVisitor):
         """Estimate cyclomatic complexity by counting branch points."""
         complexity = 1
         for child in ast.walk(node):
-            if (
-                isinstance(child, (ast.If, ast.While, ast.For, ast.AsyncFor))
-                or isinstance(child, ast.ExceptHandler)
-                or isinstance(child, (ast.And, ast.Or))
+            if isinstance(
+                child,
+                (ast.If, ast.While, ast.For, ast.AsyncFor, ast.ExceptHandler, ast.And, ast.Or),
             ):
                 complexity += 1
             elif isinstance(child, ast.BoolOp):
@@ -228,6 +223,4 @@ class ModuleVisitor(ast.NodeVisitor):
         if len(node.test.comparators) != 1:
             return False
         comp = node.test.comparators[0]
-        if isinstance(comp, ast.Constant) and comp.value == "__main__":
-            return True
-        return False
+        return isinstance(comp, ast.Constant) and comp.value == "__main__"

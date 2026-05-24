@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 from pathlib import Path
@@ -33,7 +34,7 @@ class CacheManager:
         self,
         cache_dir: Path | None = None,
         ttl: int = DEFAULT_CACHE_TTL_SECONDS,
-        enabled: bool = True,
+        enabled: bool = True,  # noqa: FBT001, FBT002
     ) -> None:
         self._enabled = enabled
         self._ttl = ttl
@@ -182,7 +183,5 @@ class CacheManager:
     def close(self) -> None:
         """Close the cache connection."""
         if self._cache is not None:
-            try:
+            with contextlib.suppress(Exception):
                 self._cache.close()
-            except Exception:
-                pass

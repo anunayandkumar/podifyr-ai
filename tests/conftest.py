@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import tempfile
-from collections.abc import Generator  # noqa: TCH003
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 @pytest.fixture(autouse=True)
@@ -20,14 +24,14 @@ def _isolate_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     reset_settings()
 
 
-@pytest.fixture()
+@pytest.fixture
 def tmp_dir() -> Generator[Path, None, None]:
     """Provide a temporary directory that is cleaned up after the test."""
     with tempfile.TemporaryDirectory() as td:
         yield Path(td)
 
 
-@pytest.fixture()
+@pytest.fixture
 def sample_python_file(tmp_dir: Path) -> Path:
     """Create a sample Python file for parsing tests."""
     file_path = tmp_dir / "sample_module.py"
@@ -94,7 +98,7 @@ if __name__ == "__main__":
     return file_path
 
 
-@pytest.fixture()
+@pytest.fixture
 def sample_repo(tmp_dir: Path) -> Path:
     """Create a sample repository structure for integration tests."""
     repo_dir = tmp_dir / "sample_repo"
@@ -171,8 +175,8 @@ def format_output(data: str, width: int = 80) -> str:
     return repo_dir
 
 
-@pytest.fixture()
-def mock_settings() -> None:  # noqa: PT004
+@pytest.fixture
+def mock_settings() -> None:
     """Install an in-memory settings object with a fake OpenAI API key for tests."""
     from podifyr.config import LLMConfig, Settings, set_settings
 

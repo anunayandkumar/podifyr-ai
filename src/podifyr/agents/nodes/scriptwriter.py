@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from podifyr.agents.prompts import SCRIPTWRITER_SYSTEM_PROMPT
-from podifyr.agents.state import ScriptState  # noqa: TCH001
 from podifyr.llm import build_chat_model
 from podifyr.logging import get_logger
+
+
+if TYPE_CHECKING:
+    from podifyr.agents.state import ScriptState
 
 
 logger = get_logger(__name__)

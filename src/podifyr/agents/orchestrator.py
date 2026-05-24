@@ -4,19 +4,25 @@ from __future__ import annotations
 
 import hashlib
 import json
+from typing import TYPE_CHECKING
 
-import networkx as nx  # noqa: TC002
 from langgraph.graph import END, StateGraph
 
 from podifyr.agents.nodes.analyzer import analyzer_node
 from podifyr.agents.nodes.dialogue import dialogue_node
 from podifyr.agents.nodes.scriptwriter import scriptwriter_node
-from podifyr.agents.state import DialogueTurn, ScriptState
-from podifyr.cache import CacheManager  # noqa: TC001
+from podifyr.agents.state import ScriptState  # used at runtime by StateGraph(ScriptState)
 from podifyr.graph.analyzer import get_module_context
 from podifyr.logging import get_logger
-from podifyr.parsing.models import ModuleMetadata  # noqa: TC001
 from podifyr.utils.fs import normalize_module_path
+
+
+if TYPE_CHECKING:
+    import networkx as nx
+
+    from podifyr.agents.state import DialogueTurn
+    from podifyr.cache import CacheManager
+    from podifyr.parsing.models import ModuleMetadata
 
 
 logger = get_logger(__name__)

@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import networkx as nx
 
 from podifyr.graph.models import NodeAttributes
 from podifyr.logging import get_logger
-from podifyr.parsing.models import ModuleMetadata
 from podifyr.utils.fs import normalize_module_path
+
+
+if TYPE_CHECKING:
+    from podifyr.parsing.models import ModuleMetadata
 
 
 logger = get_logger(__name__)

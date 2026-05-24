@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
+from typing import TYPE_CHECKING
 
 from podifyr.graph import build_dependency_graph, get_topological_sort
 from podifyr.parsing import parse_directory
+
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestFullParsePipeline:
