@@ -1,0 +1,17 @@
+# Code owners are automatically requested for review on every PR.
+# Order matters — the LAST matching pattern takes precedence.
+
+# Default owners for everything in the repo.
+* @anunayandkumar
+
+# Critical configuration & CI surfaces should always require maintainer review.
+/.github/                @anunayandkumar
+/pyproject.toml          @anunayandkumar
+/Dockerfile              @anunayandkumar
+/docker-compose.yml      @anunayandkumar
+/Makefile                @anunayandkumar
+/.pre-commit-config.yaml @anunayandkumar
+
+# Docs
+/docs/                   @anunayandkumar
+/mkdocs.yml              @anunayandkumar

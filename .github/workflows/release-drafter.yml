@@ -1,0 +1,29 @@
+name: Release Drafter
+
+# Keeps a draft GitHub Release up-to-date as PRs merge into `main`,
+# so the maintainer can cut a tag with one click when ready.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, reopened, synchronize, edited, labeled, unlabeled]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update_release_draft:
+    name: Update release draft
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write       # create / update draft release
+      pull-requests: write  # apply autolabels
+    steps:
+      - uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

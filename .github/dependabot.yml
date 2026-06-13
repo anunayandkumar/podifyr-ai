@@ -1,0 +1,61 @@
+# Dependabot keeps dependencies fresh across every ecosystem the repo uses.
+# Grouped updates keep PR noise low while still surfacing security alerts daily.
+version: 2
+
+updates:
+  # ─── Python dependencies (pyproject.toml) ────────────────────────────────
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 10
+    labels: ["dependencies", "python"]
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope
+    groups:
+      langchain:
+        patterns: ["langchain*", "langgraph*"]
+      lint-and-types:
+        patterns: ["ruff", "mypy", "types-*", "pre-commit"]
+      tests:
+        patterns: ["pytest*", "hypothesis", "coverage*"]
+      docs:
+        patterns: ["mkdocs*", "mkdocstrings*"]
+      runtime-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  # ─── GitHub Actions ──────────────────────────────────────────────────────
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "github-actions"]
+    commit-message:
+      prefix: "chore(ci)"
+      include: scope
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # ─── Dockerfile base images ──────────────────────────────────────────────
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "chore(docker)"
+      include: scope

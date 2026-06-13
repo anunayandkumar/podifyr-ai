@@ -46,3 +46,11 @@ Thumbs.db
 
 # Docs
 site/
+
+# CI / release artifacts
+junit.xml
+results.sarif
+trivy-results.sarif
+sbom.cyclonedx.json
+*.sigstore
+*.sigstore.json
