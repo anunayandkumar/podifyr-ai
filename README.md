@@ -1,4 +1,4 @@
-# 🎙️ Podifyr-AI
+# Podifyr-AI
 
 **AI-powered CLI that transforms Python codebases into true multi-speaker podcast walkthroughs using LangGraph agentic pipelines, AST analysis, dependency graph traversal, and neural text-to-speech synthesis**
 
@@ -131,17 +131,17 @@ Podifyr-AI is purely CLI-driven — there is **no `.env` file, no `PODIFYR_*` en
 
 ## Features
 
-- 🎧 **True two-speaker dialogue** — Host ↔ Expert conversation with distinct TTS voices (default), or single-narrator monologue mode (`--style monologue`)
-- 🧠 **AST-based analysis** — Extracts architecture without executing code
-- 🔗 **Dependency graphing** — Cycle-aware topological sorting with NetworkX
-- 🤖 **Multi-agent pipeline** — LangGraph orchestration with Analyzer + (Scriptwriter │ Dialogue) nodes
-- 🤝 **Unified LLM interface** — One CLI, three providers: OpenAI, Azure OpenAI, Ollama
-- 🔊 **Free TTS included** — Edge TTS (Microsoft Neural voices) works out of the box
-- 🔌 **Plugin backends** — Swappable TTS providers (Edge, OpenAI, ElevenLabs)
-- 💾 **Smart caching** — Content-hash invalidation avoids redundant API calls
-- 📊 **Rich CLI** — Beautiful progress bars, graph metrics, and colored output
-- 🐳 **Docker support** — Reproducible builds with multi-stage Dockerfile
-- ✅ **Production-grade** — Strict typing, structured logging, comprehensive test suite
+- **True two-speaker dialogue** — Host ↔ Expert conversation with distinct TTS voices (default), or single-narrator monologue mode (`--style monologue`)
+- **AST-based analysis** — Extracts architecture without executing code
+- **Dependency graphing** — Cycle-aware topological sorting with NetworkX
+- **Multi-agent pipeline** — LangGraph orchestration with Analyzer + (Scriptwriter │ Dialogue) nodes
+- **Unified LLM interface** — One CLI, three providers: OpenAI, Azure OpenAI, Ollama
+- **Free TTS included** — Edge TTS (Microsoft Neural voices) works out of the box
+- **Plugin backends** — Swappable TTS providers (Edge, OpenAI, ElevenLabs)
+- **Smart caching** — Content-hash invalidation avoids redundant API calls
+- **Rich CLI** — Beautiful progress bars, graph metrics, and colored output
+- **Docker support** — Reproducible builds with multi-stage Dockerfile
+- **Production-grade** — Strict typing, structured logging, comprehensive test suite
 
 ## Architecture
 
